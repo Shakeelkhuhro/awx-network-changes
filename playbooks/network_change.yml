@@ -1,0 +1,17 @@
+---
+- name: Network Change Test
+  hosts: all
+  gather_facts: false
+
+  tasks:
+
+    - name: Show VLANs
+      cisco.ios.ios_command:
+        commands:
+          - show vlan brief
+
+      register: output
+
+    - name: Print Output
+      debug:
+        var: output.stdout_lines
