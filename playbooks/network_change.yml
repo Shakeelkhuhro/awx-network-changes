@@ -2,45 +2,47 @@
 - name: 1LINK Network Change Automation
   hosts: all
   gather_facts: no
+  collections:
+    - cisco.ios
 
   tasks:
 
     - name: Create VLAN
-      ios_config:
+      cisco.ios.ios_config:
         lines:
           - vlan {{ vlan_id }}
           - name {{ vlan_name }}
       when: change_type == "create_vlan"
 
     - name: Delete VLAN
-      ios_config:
+      cisco.ios.ios_config:
         lines:
           - no vlan {{ vlan_id }}
       when: change_type == "delete_vlan"
 
     - name: Update VLAN Name
-      ios_config:
+      cisco.ios.ios_config:
         lines:
           - vlan {{ vlan_id }}
           - name {{ vlan_name }}
       when: change_type == "update_vlan"
 
-    - name: Bring Interface Up
-      ios_config:
+    - name: Interface Up
+      cisco.ios.ios_config:
         lines:
           - interface {{ interface_name }}
           - no shutdown
       when: change_type == "interface_up"
 
-    - name: Bring Interface Down
-      ios_config:
+    - name: Interface Down
+      cisco.ios.ios_config:
         lines:
           - interface {{ interface_name }}
           - shutdown
       when: change_type == "interface_down"
 
     - name: Update Interface Description
-      ios_config:
+      cisco.ios.ios_config:
         lines:
           - interface {{ interface_name }}
           - description {{ interface_description }}
