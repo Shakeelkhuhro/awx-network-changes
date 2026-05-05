@@ -2,48 +2,49 @@
 - name: 1LINK Network Change Automation
   hosts: all
   gather_facts: no
-  collections:
-    - cisco.ios
 
   tasks:
 
     - name: Create VLAN
-      cisco.ios.ios_config:
-        lines:
-          - vlan {{ vlan_id }}
-          - name {{ vlan_name }}
+      ansible.netcommon.cli_command:
+        command: |
+          configure terminal
+          vlan {{ vlan_id }}
+          name {{ vlan_name }}
+          end
       when: change_type == "create_vlan"
 
     - name: Delete VLAN
-      cisco.ios.ios_config:
-        lines:
-          - no vlan {{ vlan_id }}
+      ansible.netcommon.cli_command:
+        command: |
+          configure terminal
+          no vlan {{ vlan_id }}
+          end
       when: change_type == "delete_vlan"
 
-    - name: Update VLAN Name
-      cisco.ios.ios_config:
-        lines:
-          - vlan {{ vlan_id }}
-          - name {{ vlan_name }}
-      when: change_type == "update_vlan"
-
     - name: Interface Up
-      cisco.ios.ios_config:
-        lines:
-          - interface {{ interface_name }}
-          - no shutdown
+      ansible.netcommon.cli_command:
+        command: |
+          configure terminal
+          interface {{ interface_name }}
+          no shutdown
+          end
       when: change_type == "interface_up"
 
     - name: Interface Down
-      cisco.ios.ios_config:
-        lines:
-          - interface {{ interface_name }}
-          - shutdown
+      ansible.netcommon.cli_command:
+        command: |
+          configure terminal
+          interface {{ interface_name }}
+          shutdown
+          end
       when: change_type == "interface_down"
 
     - name: Update Interface Description
-      cisco.ios.ios_config:
-        lines:
-          - interface {{ interface_name }}
-          - description {{ interface_description }}
+      ansible.netcommon.cli_command:
+        command: |
+          configure terminal
+          interface {{ interface_name }}
+          description {{ interface_description }}
+          end
       when: change_type == "update_description"
