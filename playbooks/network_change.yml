@@ -1,17 +1,47 @@
 ---
-- name: Network Change Test
+- name: 1LINK Network Change Automation
   hosts: all
-  gather_facts: false
+  gather_facts: no
 
   tasks:
 
-    - name: Show VLANs
-      cisco.ios.ios_command:
-        commands:
-          - show vlan brief
+    - name: Create VLAN
+      ios_config:
+        lines:
+          - vlan {{ vlan_id }}
+          - name {{ vlan_name }}
+      when: change_type == "create_vlan"
 
-      register: output
+    - name: Delete VLAN
+      ios_config:
+        lines:
+          - no vlan {{ vlan_id }}
+      when: change_type == "delete_vlan"
 
-    - name: Print Output
-      debug:
-        var: output.stdout_lines
+    - name: Update VLAN Name
+      ios_config:
+        lines:
+          - vlan {{ vlan_id }}
+          - name {{ vlan_name }}
+      when: change_type == "update_vlan"
+
+    - name: Bring Interface Up
+      ios_config:
+        lines:
+          - interface {{ interface_name }}
+          - no shutdown
+      when: change_type == "interface_up"
+
+    - name: Bring Interface Down
+      ios_config:
+        lines:
+          - interface {{ interface_name }}
+          - shutdown
+      when: change_type == "interface_down"
+
+    - name: Update Interface Description
+      ios_config:
+        lines:
+          - interface {{ interface_name }}
+          - description {{ interface_description }}
+      when: change_type == "update_description"
