@@ -36,6 +36,6 @@
         end
       when: change_type == "update_description"
 
-    - name: Rollback Done
+    - name: Verify rollback
       debug:
-        msg: "Rollback executed."
+        msg: "Rollback executed for {{ change_type }}"
