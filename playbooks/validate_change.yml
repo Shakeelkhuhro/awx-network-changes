@@ -5,72 +5,67 @@
   connection: network_cli
 
   vars:
-    vlan_id_str: "{{ vlan_id | default('') | string }}"
+    vlan_id_str: "{{ vlan_id | string }}"
 
   tasks:
 
+    # ---------------------------
+    # INPUT CHECK
+    # ---------------------------
+
     - name: Fail if VLAN ID missing
       fail:
-        msg: "VLAN ID is required."
+        msg: "VLAN ID is required"
       when:
         - change_type in ["create_vlan", "delete_vlan"]
-        - vlan_id is not defined or vlan_id | string == ""
+        - vlan_id is not defined
 
-    - name: Fail if interface missing
+    - name: Fail if Interface missing
       fail:
-        msg: "Interface name is required."
+        msg: "Interface name is required"
       when:
         - change_type in ["interface_up", "interface_down", "update_description"]
         - interface_name is not defined or interface_name == ""
 
-    - name: Get VLAN list
-      raw: "show vlan brief"
+    # ---------------------------
+    # GET VLAN DATA
+    # ---------------------------
+
+    - name: Show VLAN
+      cisco.ios.ios_command:
+        commands:
+          - show vlan brief
       register: vlan_output
 
-    - name: Check VLAN existence
+    - name: Check VLAN Exists
       set_fact:
-        vlan_exists: >-
-          {{
-            vlan_output.stdout_lines
-            | select("search", "^" ~ vlan_id_str ~ "\\s")
-            | list
-            | length > 0
-          }}
+        vlan_exists: "{{ vlan_id_str in vlan_output.stdout[0] }}"
 
     - name: Fail if VLAN already exists
       fail:
-        msg: "VLAN {{ vlan_id }} already exists."
+        msg: "VLAN {{ vlan_id }} already exists"
       when:
         - change_type == "create_vlan"
         - vlan_exists
 
     - name: Fail if VLAN does not exist
       fail:
-        msg: "VLAN {{ vlan_id }} does not exist."
+        msg: "VLAN {{ vlan_id }} does not exist"
       when:
         - change_type == "delete_vlan"
         - not vlan_exists
 
-    - name: Get interface config
-      raw: "show running-config interface {{ interface_name }}"
+    # ---------------------------
+    # INTERFACE CHECK
+    # ---------------------------
+
+    - name: Show Interface
+      cisco.ios.ios_command:
+        commands:
+          - show running-config interface {{ interface_name }}
       register: int_output
       when: change_type in ["interface_up", "interface_down", "update_description"]
 
-    - name: Check interface validity
-      set_fact:
-        interface_valid: >-
-          {{
-            'Invalid input' not in int_output.stdout
-          }}
-      when: change_type in ["interface_up", "interface_down", "update_description"]
-
-    - name: Fail if interface invalid
-      fail:
-        msg: "Interface {{ interface_name }} does not exist."
-      when:
-        - change_type in ["interface_up", "interface_down", "update_description"]
-        - not interface_valid
-
-    - name: Validation passed
+    - name: Validation Passed
       debug:
         msg: "Validation successful"
