@@ -8,79 +8,122 @@
 
   tasks:
 
-    # -----------------------------
-    # VLAN VALIDATION
-    # -----------------------------
+  # ---------------------------
+  # BASIC INPUT VALIDATION
+  # ---------------------------
 
-    - name: Get VLAN list from device
+    - name: Fail if VLAN ID missing
+      fail:
+        msg: "VLAN ID is required."
+      when:
+        - change_type in ["create_vlan", "delete_vlan", "update_vlan"]
+        - vlan_id is not defined or vlan_id | string == ""
+
+    - name: Fail if interface missing (when required)
+      fail:
+        msg: "Interface name is required."
+      when:
+        - change_type in ["interface_up", "interface_down", "update_description"]
+        - interface_name is not defined or interface_name == ""
+
+  # ---------------------------
+  # VLAN VALIDATION
+  # ---------------------------
+
+    - name: Get VLAN list
       raw: "show vlan brief"
       register: vlan_output
 
-    - name: Check if VLAN exists
+    - name: Check VLAN existence (accurate)
       set_fact:
-        vlan_exists: "{{ vlan_id_str in vlan_output.stdout }}"
+        vlan_exists: >-
+          {{
+            vlan_output.stdout_lines
+            | select("search", "^" ~ vlan_id_str ~ "\\s")
+            | list
+            | length > 0
+          }}
 
     - name: Fail if VLAN already exists (CREATE)
       fail:
-        msg: "❌ VLAN {{ vlan_id }} already exists. Cannot create."
+        msg: "VLAN {{ vlan_id }} already exists."
       when:
         - change_type == "create_vlan"
         - vlan_exists
 
-    - name: Fail if VLAN does NOT exist (DELETE)
+    - name: Fail if VLAN does NOT exist (DELETE/UPDATE)
       fail:
-        msg: "❌ VLAN {{ vlan_id }} does not exist. Cannot delete."
+        msg: "VLAN {{ vlan_id }} does not exist."
       when:
-        - change_type == "delete_vlan"
+        - change_type in ["delete_vlan", "update_vlan"]
         - not vlan_exists
 
-    # -----------------------------
-    # INTERFACE VALIDATION
-    # -----------------------------
+  # ---------------------------
+  # INTERFACE VALIDATION
+  # ---------------------------
 
     - name: Get interface config
       raw: "show running-config interface {{ interface_name }}"
       register: int_output
-      when: interface_name is defined and interface_name != ""
+      when:
+        - change_type in ["interface_up", "interface_down", "update_description"]
+        - interface_name is defined
+        - interface_name != ""
 
-    - name: Check if interface exists
+    - name: Check interface validity
       set_fact:
-        interface_exists: "{{ 'Invalid' not in int_output.stdout }}"
-      when: interface_name is defined and interface_name != ""
+        interface_valid: >-
+          {{
+            'Invalid input' not in int_output.stdout
+            and 'not found' not in int_output.stdout
+          }}
+      when:
+        - change_type in ["interface_up", "interface_down", "update_description"]
+        - interface_name is defined
+        - interface_name != ""
 
-    - name: Fail if interface does not exist
+    - name: Fail if interface invalid
       fail:
-        msg: "❌ Interface {{ interface_name }} does not exist."
+        msg: "Interface {{ interface_name }} does not exist."
+      when:
+        - change_type in ["interface_up", "interface_down", "update_description"]
+        - not interface_valid
+
+  # ---------------------------
+  # STATE VALIDATION (UP/DOWN)
+  # ---------------------------
+
+    - name: Check interface state
+      set_fact:
+        is_shutdown: >-
+          {{
+            int_output.stdout_lines
+            | select("search", "^ shutdown")
+            | list
+            | length > 0
+          }}
       when:
         - interface_name is defined
         - interface_name != ""
-        - not interface_exists
 
-    - name: Check if interface is shutdown
-      set_fact:
-        is_shutdown: "{{ 'shutdown' in int_output.stdout }}"
-      when: interface_name is defined and interface_name != ""
-
-    - name: Fail if interface already UP
+    - name: Fail if already UP
       fail:
-        msg: "❌ Interface {{ interface_name }} is already UP."
+        msg: "Interface already UP."
       when:
         - change_type == "interface_up"
-        - interface_name is defined
         - not is_shutdown
 
-    - name: Fail if interface already DOWN
+    - name: Fail if already DOWN
       fail:
-        msg: "❌ Interface {{ interface_name }} is already DOWN."
+        msg: "Interface already DOWN."
       when:
         - change_type == "interface_down"
-        - interface_name is defined
         - is_shutdown
 
-    # -----------------------------
-    # SUCCESS MESSAGE
-    # -----------------------------
+  # ---------------------------
+  # SUCCESS
+  # ---------------------------
 
     - name: Validation Passed
       debug:
-        msg: "✅ Validation successful. Safe to proceed."
+        msg: "Validation successful. Safe to proceed."
