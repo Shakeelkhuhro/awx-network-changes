@@ -1,3 +1,4 @@
+# playbooks/validate_change.yml
 ---
 - name: 1LINK Validation Engine
   hosts: all
@@ -5,66 +6,110 @@
   connection: network_cli
 
   vars:
-    vlan_id_str: "{{ vlan_id | string }}"
+    vlan_id_str: "{{ vlan_id | default('') | string }}"
 
   tasks:
 
     # ---------------------------
-    # INPUT CHECK
+    # REQUIRED INPUT CHECKS
     # ---------------------------
+
+    - name: Fail if change_type missing
+      fail:
+        msg: "change_type is required"
+      when: change_type is not defined
 
     - name: Fail if VLAN ID missing
       fail:
-        msg: "VLAN ID is required"
+        msg: "vlan_id is required"
       when:
-        - change_type in ["create_vlan", "delete_vlan"]
+        - change_type in ['create_vlan', 'delete_vlan']
         - vlan_id is not defined
 
     - name: Fail if Interface missing
       fail:
-        msg: "Interface name is required"
+        msg: "interface_name is required"
       when:
-        - change_type in ["interface_up", "interface_down", "update_description"]
-        - interface_name is not defined or interface_name == ""
+        - change_type in ['interface_up', 'interface_down', 'update_description']
+        - interface_name is not defined or interface_name | trim == ""
+
+    - name: Fail if Description missing
+      fail:
+        msg: "interface_description is required"
+      when:
+        - change_type == 'update_description'
+        - interface_description is not defined or interface_description | trim == ""
 
     # ---------------------------
-    # GET VLAN DATA
+    # VLAN VALIDATION
     # ---------------------------
 
-    - name: Show VLAN
+    - name: Get VLAN database
       cisco.ios.ios_command:
         commands:
           - show vlan brief
       register: vlan_output
+      when: change_type in ['create_vlan', 'delete_vlan']
 
-    - name: Check VLAN Exists
+    - name: Check VLAN existence
       set_fact:
         vlan_exists: "{{ vlan_id_str in vlan_output.stdout[0] }}"
+      when: change_type in ['create_vlan', 'delete_vlan']
 
     - name: Fail if VLAN already exists
       fail:
         msg: "VLAN {{ vlan_id }} already exists"
       when:
-        - change_type == "create_vlan"
+        - change_type == 'create_vlan'
         - vlan_exists
 
     - name: Fail if VLAN does not exist
       fail:
         msg: "VLAN {{ vlan_id }} does not exist"
       when:
-        - change_type == "delete_vlan"
+        - change_type == 'delete_vlan'
         - not vlan_exists
 
     # ---------------------------
-    # INTERFACE CHECK
+    # INTERFACE VALIDATION
     # ---------------------------
 
-    - name: Show Interface
+    - name: Get interface config
       cisco.ios.ios_command:
         commands:
           - show running-config interface {{ interface_name }}
       register: int_output
-      when: change_type in ["interface_up", "interface_down", "update_description"]
+      when: change_type in ['interface_up', 'interface_down', 'update_description']
+
+    - name: Fail if interface invalid
+      fail:
+        msg: "Interface {{ interface_name }} does not exist"
+      when:
+        - change_type in ['interface_up', 'interface_down', 'update_description']
+        - "'Invalid input' in int_output.stdout[0]"
+
+    - name: Detect shutdown state
+      set_fact:
+        is_shutdown: "{{ 'shutdown' in int_output.stdout[0] }}"
+      when: change_type in ['interface_up', 'interface_down']
+
+    - name: Fail if interface already up
+      fail:
+        msg: "Interface {{ interface_name }} already UP"
+      when:
+        - change_type == 'interface_up'
+        - not is_shutdown
+
+    - name: Fail if interface already down
+      fail:
+        msg: "Interface {{ interface_name }} already DOWN"
+      when:
+        - change_type == 'interface_down'
+        - is_shutdown
+
+    # ---------------------------
+    # RESULT
+    # ---------------------------
 
     - name: Validation Passed
       debug:
