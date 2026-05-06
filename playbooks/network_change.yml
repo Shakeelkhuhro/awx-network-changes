@@ -5,6 +5,32 @@
 
   tasks:
 
+  # ---------------------------
+  # CAPTURE STATE (for rollback)
+  # ---------------------------
+
+    - name: Get current interface config
+      raw: "show running-config interface {{ interface_name }}"
+      register: current_int
+      when: change_type == "update_description"
+
+    - name: Extract previous description
+      set_fact:
+        previous_description: >-
+          {{
+            (current_int.stdout_lines
+            | select("search", "^ description")
+            | list
+            | first
+            | default("description NONE"))
+            | regex_replace("^ description ", "")
+          }}
+      when: change_type == "update_description"
+
+  # ---------------------------
+  # EXECUTION
+  # ---------------------------
+
     - name: Create VLAN
       raw: |
         configure terminal
