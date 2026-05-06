@@ -2,6 +2,7 @@
 - name: 1LINK Validation Engine
   hosts: all
   gather_facts: no
+  connection: network_cli
 
   vars:
     vlan_id_str: "{{ vlan_id | default('') | string }}"
