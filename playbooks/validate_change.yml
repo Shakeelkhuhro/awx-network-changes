@@ -9,7 +9,7 @@
   tasks:
 
   # ---------------------------
-  # BASIC INPUT VALIDATION
+  # INPUT VALIDATION
   # ---------------------------
 
     - name: Fail if VLAN ID missing
@@ -19,7 +19,7 @@
         - change_type in ["create_vlan", "delete_vlan", "update_vlan"]
         - vlan_id is not defined or vlan_id | string == ""
 
-    - name: Fail if interface missing (when required)
+    - name: Fail if interface missing
       fail:
         msg: "Interface name is required."
       when:
@@ -67,8 +67,6 @@
       register: int_output
       when:
         - change_type in ["interface_up", "interface_down", "update_description"]
-        - interface_name is defined
-        - interface_name != ""
 
     - name: Check interface validity
       set_fact:
@@ -79,8 +77,6 @@
           }}
       when:
         - change_type in ["interface_up", "interface_down", "update_description"]
-        - interface_name is defined
-        - interface_name != ""
 
     - name: Fail if interface invalid
       fail:
@@ -88,10 +84,6 @@
       when:
         - change_type in ["interface_up", "interface_down", "update_description"]
         - not interface_valid
-
-  # ---------------------------
-  # STATE VALIDATION (UP/DOWN)
-  # ---------------------------
 
     - name: Check interface state
       set_fact:
@@ -103,8 +95,7 @@
             | length > 0
           }}
       when:
-        - interface_name is defined
-        - interface_name != ""
+        - change_type in ["interface_up", "interface_down"]
 
     - name: Fail if already UP
       fail:
@@ -120,10 +111,6 @@
         - change_type == "interface_down"
         - is_shutdown
 
-  # ---------------------------
-  # SUCCESS
-  # ---------------------------
-
     - name: Validation Passed
       debug:
-        msg: "Validation successful. Safe to proceed."
+        msg: "Validation successful."
