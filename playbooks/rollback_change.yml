@@ -1,0 +1,41 @@
+---
+- name: 1LINK Rollback Engine
+  hosts: all
+  gather_facts: no
+
+  tasks:
+
+    - name: Rollback VLAN Creation
+      raw: |
+        configure terminal
+        no vlan {{ vlan_id }}
+        end
+      when: change_type == "create_vlan"
+
+    - name: Rollback Interface UP
+      raw: |
+        configure terminal
+        interface {{ interface_name }}
+        shutdown
+        end
+      when: change_type == "interface_up"
+
+    - name: Rollback Interface DOWN
+      raw: |
+        configure terminal
+        interface {{ interface_name }}
+        no shutdown
+        end
+      when: change_type == "interface_down"
+
+    - name: Rollback Interface Description
+      raw: |
+        configure terminal
+        interface {{ interface_name }}
+        description {{ previous_description }}
+        end
+      when: change_type == "update_description"
+
+    - name: Rollback Done
+      debug:
+        msg: "Rollback executed."
