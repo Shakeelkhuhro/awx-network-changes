@@ -36,8 +36,21 @@
         configure terminal
         vlan {{ vlan_id }}
         name {{ vlan_name }}
+        exit
         end
       when: change_type == "create_vlan"
+
+    - name: Verify VLAN Created
+      raw: "show vlan id {{ vlan_id }}"
+      register: vlan_check
+      when: change_type == "create_vlan"
+
+    - name: Fail if VLAN not created
+      fail:
+        msg: "VLAN {{ vlan_id }} creation failed"
+      when:
+        - change_type == "create_vlan"
+        - "'not found' in vlan_check.stdout"
 
     - name: Delete VLAN
       raw: |
@@ -45,6 +58,18 @@
         no vlan {{ vlan_id }}
         end
       when: change_type == "delete_vlan"
+
+    - name: Verify VLAN Deleted
+      raw: "show vlan id {{ vlan_id }}"
+      register: vlan_delete_check
+      when: change_type == "delete_vlan"
+
+    - name: Fail if VLAN still exists
+      fail:
+        msg: "VLAN {{ vlan_id }} deletion failed"
+      when:
+        - change_type == "delete_vlan"
+        - "'not found' not in vlan_delete_check.stdout"
 
     - name: Interface Up
       raw: |
@@ -69,3 +94,27 @@
         description {{ interface_description }}
         end
       when: change_type == "update_description"
+
+  # ---------------------------
+  # FINAL OUTPUT (ONLY RELEVANT)
+  # ---------------------------
+
+    - name: Show VLAN Result
+      raw: "show vlan id {{ vlan_id }}"
+      register: final_vlan
+      when: change_type in ["create_vlan", "delete_vlan"]
+
+    - name: Print VLAN Result
+      debug:
+        msg: "{{ final_vlan.stdout }}"
+      when: change_type in ["create_vlan", "delete_vlan"]
+
+    - name: Show Interface Result
+      raw: "show running-config interface {{ interface_name }}"
+      register: final_int
+      when: change_type in ["interface_up", "interface_down", "update_description"]
+
+    - name: Print Interface Result
+      debug:
+        msg: "{{ final_int.stdout }}"
+      when: change_type in ["interface_up", "interface_down", "update_description"]
