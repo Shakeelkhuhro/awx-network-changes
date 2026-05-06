@@ -6,43 +6,21 @@
   tasks:
 
   # ---------------------------
-  # CAPTURE STATE (for rollback)
-  # ---------------------------
-
-    - name: Get current interface config
-      raw: "show running-config interface {{ interface_name }}"
-      register: current_int
-      when: change_type == "update_description"
-
-    - name: Extract previous description
-      set_fact:
-        previous_description: >-
-          {{
-            (current_int.stdout_lines
-            | select("search", "^ description")
-            | list
-            | first
-            | default("description NONE"))
-            | regex_replace("^ description ", "")
-          }}
-      when: change_type == "update_description"
-
-  # ---------------------------
-  # EXECUTION
+  # VLAN CREATE
   # ---------------------------
 
     - name: Create VLAN
-      raw: |
-        configure terminal
-        vlan {{ vlan_id }}
-        name {{ vlan_name }}
-        exit
-        end
+      cisco.ios.ios_config:
+        lines:
+          - name {{ vlan_name }}
+        parents: vlan {{ vlan_id }}
       when: change_type == "create_vlan"
 
-    - name: Verify VLAN Created
-      raw: "show vlan id {{ vlan_id }}"
-      register: vlan_check
+    - name: Verify VLAN
+      cisco.ios.ios_command:
+        commands:
+          - show vlan id {{ vlan_id }}
+      register: vlan_output
       when: change_type == "create_vlan"
 
     - name: Fail if VLAN not created
@@ -50,71 +28,63 @@
         msg: "VLAN {{ vlan_id }} creation failed"
       when:
         - change_type == "create_vlan"
-        - "'not found' in vlan_check.stdout"
+        - "'not found' in vlan_output.stdout[0]"
+
+  # ---------------------------
+  # VLAN DELETE
+  # ---------------------------
 
     - name: Delete VLAN
-      raw: |
-        configure terminal
-        no vlan {{ vlan_id }}
-        end
+      cisco.ios.ios_config:
+        lines:
+          - no vlan {{ vlan_id }}
       when: change_type == "delete_vlan"
 
-    - name: Verify VLAN Deleted
-      raw: "show vlan id {{ vlan_id }}"
-      register: vlan_delete_check
-      when: change_type == "delete_vlan"
-
-    - name: Fail if VLAN still exists
-      fail:
-        msg: "VLAN {{ vlan_id }} deletion failed"
-      when:
-        - change_type == "delete_vlan"
-        - "'not found' not in vlan_delete_check.stdout"
+  # ---------------------------
+  # INTERFACE UP
+  # ---------------------------
 
     - name: Interface Up
-      raw: |
-        configure terminal
-        interface {{ interface_name }}
-        no shutdown
-        end
+      cisco.ios.ios_config:
+        lines:
+          - no shutdown
+        parents: interface {{ interface_name }}
       when: change_type == "interface_up"
 
+  # ---------------------------
+  # INTERFACE DOWN
+  # ---------------------------
+
     - name: Interface Down
-      raw: |
-        configure terminal
-        interface {{ interface_name }}
-        shutdown
-        end
+      cisco.ios.ios_config:
+        lines:
+          - shutdown
+        parents: interface {{ interface_name }}
       when: change_type == "interface_down"
 
-    - name: Update Interface Description
-      raw: |
-        configure terminal
-        interface {{ interface_name }}
-        description {{ interface_description }}
-        end
+  # ---------------------------
+  # DESCRIPTION UPDATE
+  # ---------------------------
+
+    - name: Update Description
+      cisco.ios.ios_config:
+        lines:
+          - description {{ interface_description }}
+        parents: interface {{ interface_name }}
       when: change_type == "update_description"
 
   # ---------------------------
-  # FINAL OUTPUT (ONLY RELEVANT)
+  # CLEAN OUTPUT
   # ---------------------------
 
     - name: Show VLAN Result
-      raw: "show vlan id {{ vlan_id }}"
+      cisco.ios.ios_command:
+        commands:
+          - show vlan id {{ vlan_id }}
       register: final_vlan
       when: change_type in ["create_vlan", "delete_vlan"]
 
-    - name: Print VLAN Result
+    - name: Print VLAN
       debug:
-        msg: "{{ final_vlan.stdout }}"
+        msg: "{{ final_vlan.stdout[0] }}"
       when: change_type in ["create_vlan", "delete_vlan"]
-
-    - name: Show Interface Result
-      raw: "show running-config interface {{ interface_name }}"
-      register: final_int
-      when: change_type in ["interface_up", "interface_down", "update_description"]
-
-    - name: Print Interface Result
-      debug:
-        msg: "{{ final_int.stdout }}"
-      when: change_type in ["interface_up", "interface_down", "update_description"]
