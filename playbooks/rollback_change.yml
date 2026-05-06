@@ -1,3 +1,4 @@
+# playbooks/rollback_change.yml
 ---
 - name: 1LINK Rollback Engine
   hosts: all
@@ -7,35 +8,42 @@
   tasks:
 
     # ---------------------------
-    # ROLLBACK VLAN CREATION
+    # VLAN ROLLBACK
     # ---------------------------
 
-    - name: Remove VLAN if create failed
+    - name: Remove created VLAN
       cisco.ios.ios_config:
         lines:
           - no vlan {{ vlan_id }}
-      when: change_type == "create_vlan"
+      when: change_type == 'create_vlan'
 
-    - name: Verify VLAN Removed
+    - name: Check VLAN after rollback
       cisco.ios.ios_command:
         commands:
-          - show vlan id {{ vlan_id }}
-      register: vlan_removed
-      when: change_type == "create_vlan"
+          - show vlan brief
+      register: vlan_check
+      when: change_type == 'create_vlan'
+
+    - name: Confirm VLAN rollback
+      debug:
+        msg: "Rollback successful. VLAN {{ vlan_id }} removed"
+      when:
+        - change_type == 'create_vlan'
+        - vlan_id|string not in vlan_check.stdout[0]
 
     # ---------------------------
-    # ROLLBACK INTERFACE UP
+    # INTERFACE UP ROLLBACK
     # ---------------------------
 
-    - name: Shutdown interface
+    - name: Shutdown interface again
       cisco.ios.ios_config:
         lines:
           - shutdown
         parents: interface {{ interface_name }}
-      when: change_type == "interface_up"
+      when: change_type == 'interface_up'
 
     # ---------------------------
-    # ROLLBACK INTERFACE DOWN
+    # INTERFACE DOWN ROLLBACK
     # ---------------------------
 
     - name: Bring interface back up
@@ -43,23 +51,23 @@
         lines:
           - no shutdown
         parents: interface {{ interface_name }}
-      when: change_type == "interface_down"
+      when: change_type == 'interface_down'
 
     # ---------------------------
-    # ROLLBACK DESCRIPTION
+    # DESCRIPTION ROLLBACK
     # ---------------------------
 
-    - name: Restore previous description
+    - name: Restore old description
       cisco.ios.ios_config:
         lines:
-          - description {{ previous_description }}
+          - description {{ previous_description | default('NONE') }}
         parents: interface {{ interface_name }}
-      when: change_type == "update_description"
+      when: change_type == 'update_description'
 
     # ---------------------------
-    # FINAL STATUS
+    # FINAL
     # ---------------------------
 
-    - name: Rollback completed
+    - name: Rollback complete
       debug:
-        msg: "Rollback executed successfully for {{ change_type }}"
+        msg: "Rollback executed for {{ change_type }}"
