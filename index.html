@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Welcome to my futuristic gaming portfolio — showcasing my gaming journey, YouTube content, and personal gaming brand." />
+  <meta name="keywords" content="gaming, portfolio, YouTube, Instagram, cyberpunk, anime, gaming brand, content creator" />
+  <meta name="author" content="Shakeel Khuhro" />
+  <meta property="og:title" content="Shakeel Khuhro — Gaming Universe" />
+  <meta property="og:description" content="Leveling Up My Journey in Gaming. Watch on YouTube, Follow on Instagram." />
+  <meta property="og:type" content="website" />
+  <title>Shakeel Khuhro | Gaming Universe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ══════════════════════ LOADING SCREEN ══════════════════════ -->
+  <div id="loader" aria-label="Loading" role="status">
+    <div class="loader-inner">
+      <div class="loader-logo">
+        <span class="loader-bracket">[</span>
+        <span class="loader-text glitch" data-text="SK">SK</span>
+        <span class="loader-bracket">]</span>
+      </div>
+      <div class="loader-bar-wrap">
+        <div class="loader-bar" id="loaderBar"></div>
+      </div>
+      <p class="loader-status" id="loaderStatus">INITIALIZING GAMING OS...</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ NAVIGATION ══════════════════════ -->
+  <nav id="navbar" aria-label="Main navigation">
+    <div class="nav-brand">
+      <span class="brand-bracket">[</span><span class="brand-name">SK</span><span class="brand-bracket">]</span>
+    </div>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks" role="list">
+      <li><a href="#hero" class="nav-link">HOME</a></li>
+      <li><a href="#about" class="nav-link">ABOUT</a></li>
+      <li><a href="#content" class="nav-link">CONTENT</a></li>
+      <li><a href="#social" class="nav-link">SOCIAL</a></li>
+      <li><a href="#achievements" class="nav-link">STATS</a></li>
+      <li><a href="#gallery" class="nav-link">GALLERY</a></li>
+      <li><a href="#contact" class="nav-link">SQUAD</a></li>
+    </ul>
+    <div class="nav-sound">
+      <button id="soundToggle" aria-label="Toggle background music" title="Toggle Music">
+        <svg id="soundIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11,5 6,9 2,9 2,15 6,15 11,19 11,5"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════ HERO SECTION ══════════════════════ -->
+  <section id="hero" aria-label="Hero">
+    <canvas id="particleCanvas" aria-hidden="true"></canvas>
+    <div class="hero-grid-overlay" aria-hidden="true"></div>
+    <div class="hero-scanlines" aria-hidden="true"></div>
+
+    <!-- Anime silhouette decorations -->
+    <div class="anime-char left" aria-hidden="true">
+      <div class="anime-glow"></div>
+    </div>
+    <div class="anime-char right" aria-hidden="true">
+      <div class="anime-glow"></div>
+    </div>
+
+    <!-- HUD corner elements -->
+    <div class="hud-corner top-left" aria-hidden="true">
+      <span class="hud-label">PLAYER_01</span>
+      <span class="hud-value blink">ONLINE</span>
+    </div>
+    <div class="hud-corner top-right" aria-hidden="true">
+      <span class="hud-label">LEVEL</span>
+      <span class="hud-value counter-hero">99</span>
+    </div>
+    <div class="hud-corner bottom-left" aria-hidden="true">
+      <span class="hud-label">SYSTEM</span>
+      <span class="hud-value">ACTIVE</span>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-tag animate-fade-up">// WELCOME TO MY GAMING UNIVERSE</div>
+      <h1 class="hero-title glitch animate-fade-up delay-1" data-text="SHAKEEL KHUHRO">SHAKEEL KHUHRO</h1>
+      <p class="hero-subtitle animate-fade-up delay-2">
+        <span class="typewriter" id="typewriter"></span>
+      </p>
+      <div class="hero-cta animate-fade-up delay-3">
+        <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 0 0 .5 6.19 31.7 31.7 0 0 0 0 12a31.7 31.7 0 0 0 .5 5.81 3.02 3.02 0 0 0 2.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14A31.7 31.7 0 0 0 24 12a31.7 31.7 0 0 0-.5-5.81zM9.75 15.52V8.48L15.5 12l-5.75 3.52z"/></svg>
+          WATCH ON YOUTUBE
+        </a>
+        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+          FOLLOW ON INSTAGRAM
+        </a>
+      </div>
+    </div>
+
+    <div class="scroll-indicator" aria-hidden="true">
+      <div class="scroll-line"></div>
+      <span>SCROLL</span>
+    </div>
+  </section>
+
+  <!-- ══════════════════════ ABOUT SECTION ══════════════════════ -->
+  <section id="about" aria-labelledby="about-heading">
+    <div class="section-bg-text" aria-hidden="true">ABOUT</div>
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">// PLAYER PROFILE</span>
+        <h2 id="about-heading" class="section-title">ABOUT ME</h2>
+        <div class="section-line"></div>
+      </div>
+
+      <div class="about-grid">
+        <div class="about-visual reveal">
+          <div class="about-avatar-frame">
+            <div class="about-avatar">
+              <div class="avatar-inner">
+                <svg viewBox="0 0 200 200" fill="none" aria-hidden="true">
+                  <!-- Anime-style face silhouette -->
+                  <circle cx="100" cy="80" r="45" fill="#FFD700" fill-opacity="0.08" stroke="#FFD700" stroke-width="1"/>
+                  <circle cx="100" cy="80" r="35" fill="#FFD700" fill-opacity="0.06"/>
+                  <rect x="70" y="120" width="60" height="80" rx="5" fill="#FFD700" fill-opacity="0.06" stroke="#FFD700" stroke-width="1"/>
+                  <circle cx="85" cy="75" r="6" fill="#FFD700" fill-opacity="0.6"/>
+                  <circle cx="115" cy="75" r="6" fill="#FFD700" fill-opacity="0.6"/>
+                  <path d="M88 95 Q100 105 112 95" stroke="#FFD700" stroke-width="2" fill="none" opacity="0.6"/>
+                  <!-- Controller icon at bottom -->
+                  <rect x="60" y="155" width="80" height="40" rx="20" fill="none" stroke="#FFD700" stroke-width="1.5" opacity="0.4"/>
+                  <circle cx="80" cy="175" r="5" fill="#FFD700" fill-opacity="0.3"/>
+                  <circle cx="120" cy="175" r="5" fill="#FFD700" fill-opacity="0.3"/>
+                  <circle cx="100" cy="165" r="3" fill="#FFD700" fill-opacity="0.3"/>
+                  <circle cx="100" cy="185" r="3" fill="#FFD700" fill-opacity="0.3"/>
+                </svg>
+              </div>
+            </div>
+            <div class="avatar-orbit" aria-hidden="true"></div>
+            <div class="avatar-ping" aria-hidden="true"></div>
+          </div>
+          <div class="about-stats-mini">
+            <div class="stat-mini">
+              <span class="stat-mini-val">2+</span>
+              <span class="stat-mini-label">YRS GAMING</span>
+            </div>
+            <div class="stat-mini">
+              <span class="stat-mini-val">50+</span>
+              <span class="stat-mini-label">VIDEOS</span>
+            </div>
+            <div class="stat-mini">
+              <span class="stat-mini-val">∞</span>
+              <span class="stat-mini-label">PASSION</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="about-text reveal delay-1">
+          <div class="about-tag blink-slow">[ STATUS: ONLINE ]</div>
+          <h3 class="about-name">SHAKEEL<br/><span>KHUHRO</span></h3>
+          <p class="about-bio">
+            Welcome to my digital realm. I'm a passionate gamer and content creator on a mission to level up both in-game and in life. From intense FPS firefights to immersive story-driven worlds — every game is a new adventure worth sharing.
+          </p>
+          <p class="about-bio">
+            My YouTube channel and Instagram are my platforms to connect with fellow gamers, share epic moments, and build a community that lives and breathes gaming culture. The grind never stops.
+          </p>
+          <div class="about-goals">
+            <h4 class="goals-title">// MISSION OBJECTIVES</h4>
+            <ul class="goals-list">
+              <li><span class="goal-check">✓</span> Build an authentic gaming community</li>
+              <li><span class="goal-check">✓</span> Produce top-tier gaming content consistently</li>
+              <li><span class="goal-check active">◈</span> Reach 10K YouTube subscribers</li>
+              <li><span class="goal-check pending">◻</span> Partner with gaming brands</li>
+              <li><span class="goal-check pending">◻</span> Launch live streaming series</li>
+            </ul>
+          </div>
+          <div class="about-genres">
+            <span class="genre-tag">FPS</span>
+            <span class="genre-tag">RPG</span>
+            <span class="genre-tag">STORY</span>
+            <span class="genre-tag">MULTIPLAYER</span>
+            <span class="genre-tag">BATTLE ROYALE</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════ GAMING CONTENT ══════════════════════ -->
+  <section id="content" aria-labelledby="content-heading">
+    <div class="section-bg-text" aria-hidden="true">CONTENT</div>
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">// BROADCAST FEED</span>
+        <h2 id="content-heading" class="section-title">GAMING CONTENT</h2>
+        <div class="section-line"></div>
+      </div>
+
+      <!-- Category Filter -->
+      <div class="content-filters reveal">
+        <button class="filter-btn active" data-filter="all">ALL</button>
+        <button class="filter-btn" data-filter="fps">FPS</button>
+        <button class="filter-btn" data-filter="story">STORY</button>
+        <button class="filter-btn" data-filter="multiplayer">MULTIPLAYER</button>
+        <button class="filter-btn" data-filter="highlights">HIGHLIGHTS</button>
+      </div>
+
+      <!-- Featured Videos -->
+      <div class="videos-grid">
+        <div class="video-card reveal" data-category="fps">
+          <div class="video-thumb">
+            <div class="video-placeholder">
+              <div class="video-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              </div>
+              <div class="video-category-badge">FPS</div>
+              <div class="video-duration">12:47</div>
+            </div>
+            <div class="video-overlay">
+              <span class="play-text">PLAY VIDEO</span>
+            </div>
+          </div>
+          <div class="video-info">
+            <h3 class="video-title">Epic 1v5 Clutch — No Scope Edition</h3>
+            <div class="video-meta">
+              <span class="video-views">👁 24.5K views</span>
+              <span class="video-date">2 days ago</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="video-card reveal delay-1" data-category="story">
+          <div class="video-thumb">
+            <div class="video-placeholder">
+              <div class="video-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              </div>
+              <div class="video-category-badge">STORY</div>
+              <div class="video-duration">28:15</div>
+            </div>
+            <div class="video-overlay">
+              <span class="play-text">PLAY VIDEO</span>
+            </div>
+          </div>
+          <div class="video-info">
+            <h3 class="video-title">The Last of Us — Complete Lore Breakdown</h3>
+            <div class="video-meta">
+              <span class="video-views">👁 18.2K views</span>
+              <span class="video-date">1 week ago</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="video-card reveal delay-2" data-category="multiplayer">
+          <div class="video-thumb">
+            <div class="video-placeholder">
+              <div class="video-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              </div>
+              <div class="video-category-badge">MULTIPLAYER</div>
+              <div class="video-duration">19:33</div>
+            </div>
+            <div class="video-overlay">
+              <span class="play-text">PLAY VIDEO</span>
+            </div>
+          </div>
+          <div class="video-info">
+            <h3 class="video-title">Squad Wipe in Warzone — Full Squad Gameplay</h3>
+            <div class="video-meta">
+              <span class="video-views">👁 31.7K views</span>
+              <span class="video-date">3 days ago</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="video-card reveal" data-category="highlights">
+          <div class="video-thumb">
+            <div class="video-placeholder">
+              <div class="video-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              </div>
+              <div class="video-category-badge">HIGHLIGHTS</div>
+              <div class="video-duration">5:20</div>
+            </div>
+            <div class="video-overlay">
+              <span class="play-text">PLAY VIDEO</span>
+            </div>
+          </div>
+          <div class="video-info">
+            <h3 class="video-title">Best Plays of the Month — Compilation</h3>
+            <div class="video-meta">
+              <span class="video-views">👁 42.1K views</span>
+              <span class="video-date">5 days ago</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="video-card reveal delay-1" data-category="fps">
+          <div class="video-thumb">
+            <div class="video-placeholder">
+              <div class="video-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              </div>
+              <div class="video-category-badge">FPS</div>
+              <div class="video-duration">15:08</div>
+            </div>
+            <div class="video-overlay">
+              <span class="play-text">PLAY VIDEO</span>
+            </div>
+          </div>
+          <div class="video-info">
+            <h3 class="video-title">Apex Legends — Ranked Grind to Diamond</h3>
+            <div class="video-meta">
+              <span class="video-views">👁 15.9K views</span>
+              <span class="video-date">1 week ago</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="video-card reveal delay-2" data-category="story">
+          <div class="video-thumb">
+            <div class="video-placeholder">
+              <div class="video-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              </div>
+              <div class="video-category-badge">STORY</div>
+              <div class="video-duration">35:42</div>
+            </div>
+            <div class="video-overlay">
+              <span class="play-text">PLAY VIDEO</span>
+            </div>
+          </div>
+          <div class="video-info">
+            <h3 class="video-title">Cyberpunk 2077 — Hidden Endings Guide</h3>
+            <div class="video-meta">
+              <span class="video-views">👁 28.4K views</span>
+              <span class="video-date">2 weeks ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-cta reveal">
+        <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+          VIEW ALL VIDEOS
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════ SOCIAL MEDIA ══════════════════════ -->
+  <section id="social" aria-labelledby="social-heading">
+    <div class="section-bg-text" aria-hidden="true">SOCIAL</div>
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">// NETWORK CONNECTIONS</span>
+        <h2 id="social-heading" class="section-title">SOCIAL HUB</h2>
+        <div class="section-line"></div>
+      </div>
+
+      <div class="social-grid">
+        <!-- YouTube Card -->
+        <div class="social-card youtube reveal">
+          <div class="social-card-header">
+            <div class="social-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 0 0 .5 6.19 31.7 31.7 0 0 0 0 12a31.7 31.7 0 0 0 .5 5.81 3.02 3.02 0 0 0 2.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14A31.7 31.7 0 0 0 24 12a31.7 31.7 0 0 0-.5-5.81zM9.75 15.52V8.48L15.5 12l-5.75 3.52z"/></svg>
+            </div>
+            <div>
+              <div class="social-platform">YOUTUBE</div>
+              <div class="social-handle">@ShakeelKhuhro</div>
+            </div>
+            <div class="social-badge live">LIVE</div>
+          </div>
+          <div class="social-preview">
+            <div class="preview-thumb">
+              <div class="preview-play">▶</div>
+              <span class="preview-label">LATEST VIDEO</span>
+            </div>
+            <p class="social-latest-title">Epic 1v5 Clutch — No Scope Edition</p>
+          </div>
+          <div class="social-stats-row">
+            <div class="social-stat">
+              <span class="social-stat-val" data-target="8500">0</span>
+              <span class="social-stat-label">SUBSCRIBERS</span>
+            </div>
+            <div class="social-stat">
+              <span class="social-stat-val" data-target="50">0</span>
+              <span class="social-stat-label">VIDEOS</span>
+            </div>
+            <div class="social-stat">
+              <span class="social-stat-val" data-target="120000">0</span>
+              <span class="social-stat-label">TOTAL VIEWS</span>
+            </div>
+          </div>
+          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="btn btn-social">
+            SUBSCRIBE NOW
+          </a>
+        </div>
+
+        <!-- Instagram Card -->
+        <div class="social-card instagram reveal delay-1">
+          <div class="social-card-header">
+            <div class="social-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </div>
+            <div>
+              <div class="social-platform">INSTAGRAM</div>
+              <div class="social-handle">@ShakeelKhuhro</div>
+            </div>
+            <div class="social-badge">ACTIVE</div>
+          </div>
+          <div class="instagram-grid">
+            <div class="ig-post">📸</div>
+            <div class="ig-post">🎮</div>
+            <div class="ig-post">🏆</div>
+            <div class="ig-post">⚔️</div>
+            <div class="ig-post">🌟</div>
+            <div class="ig-post">🔥</div>
+          </div>
+          <div class="social-stats-row">
+            <div class="social-stat">
+              <span class="social-stat-val" data-target="3200">0</span>
+              <span class="social-stat-label">FOLLOWERS</span>
+            </div>
+            <div class="social-stat">
+              <span class="social-stat-val" data-target="180">0</span>
+              <span class="social-stat-label">POSTS</span>
+            </div>
+            <div class="social-stat">
+              <span class="social-stat-val" data-target="15000">0</span>
+              <span class="social-stat-label">LIKES</span>
+            </div>
+          </div>
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="btn btn-social">
+            FOLLOW NOW
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════ ACHIEVEMENTS ══════════════════════ -->
+  <section id="achievements" aria-labelledby="achievements-heading">
+    <div class="section-bg-text" aria-hidden="true">STATS</div>
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">// PLAYER STATS</span>
+        <h2 id="achievements-heading" class="section-title">ACHIEVEMENTS</h2>
+        <div class="section-line"></div>
+      </div>
+
+      <!-- Big Counter Stats -->
+      <div class="stats-grid reveal">
+        <div class="stat-card">
+          <div class="stat-icon">🎮</div>
+          <div class="stat-number counter" data-target="8500">0</div>
+          <div class="stat-label">SUBSCRIBERS</div>
+          <div class="stat-desc">YouTube Channel</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📺</div>
+          <div class="stat-number counter" data-target="50">0</div>
+          <div class="stat-label">VIDEOS PUBLISHED</div>
+          <div class="stat-desc">and counting...</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-number counter" data-target="3200">0</div>
+          <div class="stat-label">INSTAGRAM FOLLOWERS</div>
+          <div class="stat-desc">Growing community</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-number counter" data-target="120000">0</div>
+          <div class="stat-label">TOTAL VIEWS</div>
+          <div class="stat-desc">Across all platforms</div>
+        </div>
+      </div>
+
+      <!-- Progress Bars -->
+      <div class="progress-section reveal delay-1">
+        <h3 class="progress-title">// SKILL TREE</h3>
+        <div class="progress-bars">
+          <div class="progress-item">
+            <div class="progress-label">
+              <span>CONTENT CREATION</span>
+              <span>85%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" data-width="85"></div>
+            </div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-label">
+              <span>FPS GAMING</span>
+              <span>92%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" data-width="92"></div>
+            </div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-label">
+              <span>COMMUNITY BUILDING</span>
+              <span>78%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" data-width="78"></div>
+            </div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-label">
+              <span>VIDEO EDITING</span>
+              <span>80%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" data-width="80"></div>
+            </div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-label">
+              <span>STORY GAMES</span>
+              <span>88%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" data-width="88"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Milestone Timeline -->
+      <div class="timeline reveal delay-2">
+        <h3 class="progress-title">// MILESTONE LOG</h3>
+        <div class="timeline-items">
+          <div class="timeline-item">
+            <div class="timeline-dot completed"></div>
+            <div class="timeline-content">
+              <span class="timeline-date">2023</span>
+              <h4>Channel Launched</h4>
+              <p>First video uploaded. The journey begins.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot completed"></div>
+            <div class="timeline-content">
+              <span class="timeline-date">2023</span>
+              <h4>First 1,000 Subscribers</h4>
+              <p>Hit the first major milestone. Community growing!</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot completed"></div>
+            <div class="timeline-content">
+              <span class="timeline-date">2024</span>
+              <h4>5,000 Subscribers</h4>
+              <p>Growing fast. Viral clip hit 50K views!</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot active pulse"></div>
+            <div class="timeline-content">
+              <span class="timeline-date">2025 NOW</span>
+              <h4>8,500 Subscribers — Pushing to 10K</h4>
+              <p>Grinding daily. The 10K badge is within reach.</p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot pending"></div>
+            <div class="timeline-content">
+              <span class="timeline-date">UPCOMING</span>
+              <h4>10,000 Subscribers</h4>
+              <p>Next big target. Watch this space.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════ GALLERY ══════════════════════ -->
+  <section id="gallery" aria-labelledby="gallery-heading">
+    <div class="section-bg-text" aria-hidden="true">GALLERY</div>
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">// VISUAL ARCHIVE</span>
+        <h2 id="gallery-heading" class="section-title">GALLERY</h2>
+        <div class="section-line"></div>
+      </div>
+
+      <div class="gallery-grid">
+        <div class="gallery-item reveal large" data-label="EPIC CLUTCH">
+          <div class="gallery-placeholder">
+            <span class="gallery-emoji">🎯</span>
+            <span class="gallery-desc">Legendary Clutch Play</span>
+          </div>
+          <div class="gallery-overlay">
+            <span class="gallery-label">EPIC CLUTCH</span>
+            <span class="gallery-type">SCREENSHOT</span>
+          </div>
+        </div>
+        <div class="gallery-item reveal" data-label="SQUAD GOALS">
+          <div class="gallery-placeholder">
+            <span class="gallery-emoji">👥</span>
+            <span class="gallery-desc">Squad Victory</span>
+          </div>
+          <div class="gallery-overlay">
+            <span class="gallery-label">SQUAD GOALS</span>
+            <span class="gallery-type">SCREENSHOT</span>
+          </div>
+        </div>
+        <div class="gallery-item reveal delay-1" data-label="ANIME EDIT">
+          <div class="gallery-placeholder anime-bg">
+            <span class="gallery-emoji">⚔️</span>
+            <span class="gallery-desc">Anime Style Edit</span>
+          </div>
+          <div class="gallery-overlay">
+            <span class="gallery-label">ANIME EDIT</span>
+            <span class="gallery-type">ART</span>
+          </div>
+        </div>
+        <div class="gallery-item reveal delay-2 tall" data-label="VICTORY">
+          <div class="gallery-placeholder">
+            <span class="gallery-emoji">🏆</span>
+            <span class="gallery-desc">Season Champion</span>
+          </div>
+          <div class="gallery-overlay">
+            <span class="gallery-label">VICTORY</span>
+            <span class="gallery-type">SCREENSHOT</span>
+          </div>
+        </div>
+        <div class="gallery-item reveal" data-label="NEON CITY">
+          <div class="gallery-placeholder cyberpunk-bg">
+            <span class="gallery-emoji">🌆</span>
+            <span class="gallery-desc">Cyberpunk City</span>
+          </div>
+          <div class="gallery-overlay">
+            <span class="gallery-label">NEON CITY</span>
+            <span class="gallery-type">ART</span>
+          </div>
+        </div>
+        <div class="gallery-item reveal delay-1" data-label="HEADSHOT">
+          <div class="gallery-placeholder">
+            <span class="gallery-emoji">💥</span>
+            <span class="gallery-desc">Insane Headshot</span>
+          </div>
+          <div class="gallery-overlay">
+            <span class="gallery-label">HEADSHOT</span>
+            <span class="gallery-type">CLIP</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════ CONTACT / JOIN COMMUNITY ══════════════════════ -->
+  <section id="contact" aria-labelledby="contact-heading">
+    <div class="section-bg-text" aria-hidden="true">SQUAD</div>
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-tag">// RECRUITMENT HQ</span>
+        <h2 id="contact-heading" class="section-title glitch" data-text="JOIN MY SQUAD">JOIN MY SQUAD</h2>
+        <div class="section-line"></div>
+      </div>
+
+      <div class="contact-grid">
+        <div class="contact-message reveal">
+          <p class="contact-intro">
+            Ready to level up together? Join the community and be part of something epic. Whether you're a casual gamer or a hardcore pro — there's a place for you in the squad.
+          </p>
+          <div class="contact-links">
+            <a href="https://discord.gg" target="_blank" rel="noopener noreferrer" class="contact-link discord">
+              <div class="contact-link-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+              </div>
+              <div class="contact-link-text">
+                <span class="link-platform">DISCORD</span>
+                <span class="link-desc">Join the server</span>
+              </div>
+              <span class="link-arrow">→</span>
+            </a>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" class="contact-link youtube">
+              <div class="contact-link-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 0 0 .5 6.19 31.7 31.7 0 0 0 0 12a31.7 31.7 0 0 0 .5 5.81 3.02 3.02 0 0 0 2.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14A31.7 31.7 0 0 0 24 12a31.7 31.7 0 0 0-.5-5.81zM9.75 15.52V8.48L15.5 12l-5.75 3.52z"/></svg>
+              </div>
+              <div class="contact-link-text">
+                <span class="link-platform">YOUTUBE</span>
+                <span class="link-desc">Subscribe for content</span>
+              </div>
+              <span class="link-arrow">→</span>
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="contact-link instagram">
+              <div class="contact-link-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              </div>
+              <div class="contact-link-text">
+                <span class="link-platform">INSTAGRAM</span>
+                <span class="link-desc">Follow gaming clips</span>
+              </div>
+              <span class="link-arrow">→</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="contact-form-wrap reveal delay-1">
+          <div class="contact-form-header">
+            <span class="form-tag">// SEND MESSAGE</span>
+          </div>
+          <form class="contact-form" id="contactForm" novalidate>
+            <div class="form-group">
+              <label for="formName">PLAYER TAG</label>
+              <input type="text" id="formName" name="name" placeholder="Your name / gamertag" autocomplete="name" required />
+            </div>
+            <div class="form-group">
+              <label for="formEmail">COMMS CHANNEL</label>
+              <input type="email" id="formEmail" name="email" placeholder="your@email.com" autocomplete="email" required />
+            </div>
+            <div class="form-group">
+              <label for="formMessage">MESSAGE</label>
+              <textarea id="formMessage" name="message" placeholder="Wanna collab? Have feedback? Let's talk..." rows="4" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary full-width">
+              SEND TRANSMISSION
+            </button>
+            <div class="form-success" id="formSuccess" hidden>
+              ✓ MESSAGE RECEIVED. TALK SOON, GAMER!
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════ FOOTER ══════════════════════ -->
+  <footer id="footer" aria-label="Footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="brand-bracket">[</span><span class="brand-name">SK</span><span class="brand-bracket">]</span>
+        <p>SHAKEEL KHUHRO — GAMING UNIVERSE</p>
+      </div>
+      <nav class="footer-nav" aria-label="Footer navigation">
+        <a href="#hero">HOME</a>
+        <a href="#about">ABOUT</a>
+        <a href="#content">CONTENT</a>
+        <a href="#achievements">STATS</a>
+        <a href="#gallery">GALLERY</a>
+        <a href="#contact">CONTACT</a>
+      </nav>
+      <div class="footer-socials">
+        <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.5 12 3.5 12 3.5s-7.54 0-9.38.55A3.02 3.02 0 0 0 .5 6.19 31.7 31.7 0 0 0 0 12a31.7 31.7 0 0 0 .5 5.81 3.02 3.02 0 0 0 2.12 2.14C4.46 20.5 12 20.5 12 20.5s7.54 0 9.38-.55a3.02 3.02 0 0 0 2.12-2.14A31.7 31.7 0 0 0 24 12a31.7 31.7 0 0 0-.5-5.81zM9.75 15.52V8.48L15.5 12l-5.75 3.52z"/></svg>
+        </a>
+        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        </a>
+        <a href="https://discord.gg" target="_blank" rel="noopener noreferrer" aria-label="Discord">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 SHAKEEL KHUHRO. ALL RIGHTS RESERVED.</p>
+      <p class="footer-quote">"THE GAME NEVER ENDS. NEITHER DOES THE GRIND."</p>
+    </div>
+  </footer>
+
+  <!-- Back to top -->
+  <button id="backToTop" class="back-to-top" aria-label="Back to top" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18,15 12,9 6,15"/></svg>
+  </button>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
