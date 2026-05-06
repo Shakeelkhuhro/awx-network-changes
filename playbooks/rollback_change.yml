@@ -2,6 +2,7 @@
 - name: 1LINK Rollback Engine
   hosts: all
   gather_facts: no
+  connection: network_cli
 
   tasks:
 
