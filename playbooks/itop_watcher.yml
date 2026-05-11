@@ -7,7 +7,8 @@
   tasks:
     - name: Get Resolved User Requests from iTop
       ansible.builtin.uri:
-        url: "{{ lookup('env', 'ITOP_URL') }}"
+        # Using your WSL eth0 IP here is the "localhost" equivalent for AWX
+        url: "http://172.25.115.72/itop/webservices/rest.php?version=1.3"
         method: POST
         body_format: form-urlencoded
         body:
@@ -25,7 +26,7 @@
       awx.awx.workflow_launch:
         name: "Change Approval Workflow"
         inventory: "iTop Managed Network"
-        # Internal Kubernetes DNS for AWX
+        # This is the "Local" address for AWX inside Kubernetes
         controller_host: "http://awx-web-service.awx.svc.cluster.local"
         controller_username: "admin"
         controller_password: "Admin@123"
