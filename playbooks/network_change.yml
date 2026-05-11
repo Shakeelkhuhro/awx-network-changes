@@ -14,7 +14,7 @@
     - name: Capture interface config before description update
       cisco.ios.ios_command:
         commands:
-          - show running-config interface {{ interface_name }}
+          - "show running-config interface {{ interface_name }}"
       register: current_int
       when: change_type == 'update_description'
 
@@ -39,42 +39,42 @@
     - name: Create VLAN
       cisco.ios.ios_config:
         lines:
-          - name {{ vlan_name | default('VLAN_' ~ vlan_id) | replace(' ', '_') }}
-        parents: vlan {{ vlan_id }}
+          - "name {{ vlan_name | default('VLAN_' ~ vlan_id) | replace(' ', '_') }}"
+        parents: "vlan {{ vlan_id }}"
       when: change_type == 'create_vlan'
 
     - name: Verify VLAN Created
       cisco.ios.ios_command:
         commands:
-          - show vlan id {{ vlan_id }}
+          - "show vlan id {{ vlan_id }}"
       register: vlan_result
       when: change_type == 'create_vlan'
 
     - name: Delete VLAN
       cisco.ios.ios_config:
         lines:
-          - no vlan {{ vlan_id }}
+          - "no vlan {{ vlan_id }}"
       when: change_type == 'delete_vlan'
 
     - name: Interface Up
       cisco.ios.ios_config:
         lines:
           - no shutdown
-        parents: interface {{ interface_name }}
+        parents: "interface {{ interface_name }}"
       when: change_type == 'interface_up'
 
     - name: Interface Down
       cisco.ios.ios_config:
         lines:
           - shutdown
-        parents: interface {{ interface_name }}
+        parents: "interface {{ interface_name }}"
       when: change_type == 'interface_down'
 
     - name: Update Interface Description
       cisco.ios.ios_config:
         lines:
-          - description {{ interface_description | replace(' ', '_') }}
-        parents: interface {{ interface_name }}
+          - "description {{ interface_description | replace(' ', '_') }}"
+        parents: "interface {{ interface_name }}"
       when: change_type == 'update_description'
 
     # ---------------------------
@@ -85,3 +85,33 @@
       debug:
         msg: "{{ vlan_result.stdout[0] }}"
       when: change_type == 'create_vlan'
+
+
+# -----------------------------------
+# CLOSE ITOP TICKET
+# -----------------------------------
+
+- name: Close iTop Ticket on Success
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+
+    - name: Close iTop Ticket
+      ansible.builtin.uri:
+        url: "{{ lookup('env', 'ITOP_URL') }}"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          auth_token: "{{ lookup('env', 'ITOP_TOKEN') }}"
+          json_data: >
+            {
+              "operation": "core/update",
+              "class": "UserRequest",
+              "key": "{{ itop_ticket_id }}",
+              "comment": "AWX Automation completed successfully.",
+              "fields": {
+                "status": "closed",
+                "solution": "Successfully executed {{ change_type }} for VLAN {{ vlan_id }}."
+              }
+            }
