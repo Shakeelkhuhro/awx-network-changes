@@ -71,3 +71,29 @@
     - name: Rollback complete
       debug:
         msg: "Rollback executed for {{ change_type }}"
+
+
+- name: Update iTop Ticket on Rollback/Failure
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+
+    - name: Update iTop Ticket
+      ansible.builtin.uri:
+        url: "{{ lookup('env', 'ITOP_URL') }}"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          auth_token: "{{ lookup('env', 'ITOP_TOKEN') }}"
+          json_data: >
+            {
+              "operation": "core/update",
+              "class": "UserRequest",
+              "key": "{{ itop_ticket_id }}",
+              "fields": {
+                "private_log": "AWX Automation failed. Rollback executed successfully.",
+                "solution": "Change failed during {{ change_type }}. Manual intervention required."
+              }
+            }
+      delegate_to: localhost
