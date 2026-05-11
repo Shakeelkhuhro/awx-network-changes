@@ -1,7 +1,10 @@
 - name: Poll iTop for Resolved Tickets
   hosts: localhost
   connection: local
+  gather_facts: no
+
   tasks:
+
     - name: Get Resolved User Requests from iTop
       ansible.builtin.uri:
         url: "{{ lookup('env', 'ITOP_URL') }}"
@@ -22,4 +25,20 @@
       ansible.builtin.debug:
         msg: "Found Ticket: {{ item.fields.id }}. Triggering Workflow now..."
       loop: "{{ itop_response.json.objects | dict2items | map(attribute='value') | list }}"
-      when: itop_response.json.code == 0 and itop_response.json.objects is not none
+      when:
+        - itop_response.json.code == 0
+        - itop_response.json.objects is not none
+
+    - name: Trigger the 1LINK Network Workflow
+      awx.awx.workflow_launch:
+        name: "1LINK Workflow Template"
+        inventory: "iTop Managed Network"
+        extra_vars:
+          itop_ticket_id: "{{ item.fields.id }}"
+          vlan_id: "{{ item.fields.description.split(',')[0] }}"
+          vlan_name: "{{ item.fields.description.split(',')[1] }}"
+          change_type: "create_vlan"
+      loop: "{{ itop_response.json.objects | dict2items | map(attribute='value') | list }}"
+      when:
+        - itop_response.json.code == 0
+        - itop_response.json.objects is not none
