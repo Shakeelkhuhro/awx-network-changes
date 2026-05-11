@@ -23,17 +23,19 @@
 
     - name: Trigger the 1LINK Network Workflow
       awx.awx.workflow_launch:
-        # This name must match the name in your AWX UI exactly
         name: "Change Approval Workflow"
         inventory: "iTop Managed Network"
+        # Internal Kubernetes DNS for AWX
+        controller_host: "http://awx-web-service.awx.svc.cluster.local"
+        controller_username: "admin"
+        controller_password: "Admin@123"
+        validate_certs: no
         extra_vars:
           itop_ticket_id: "{{ item.fields.id }}"
-          # Splits '100,Finance_VLAN' into two variables
-          vlan_id: "{{ item.fields.description.split(',')[0] }}"
-          vlan_name: "{{ item.fields.description.split(',')[1] | default('VLAN_' ~ item.fields.id) }}"
+          vlan_id: "100"
+          vlan_name: "Finance_VLAN"
           change_type: "create_vlan"
       loop: "{{ itop_response.json.objects | dict2items | map(attribute='value') | list }}"
-      # Only runs if iTop returned at least one ticket
       when: 
         - itop_response.json.code == 0 
         - itop_response.json.objects is not none
