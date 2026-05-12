@@ -7,7 +7,6 @@
   tasks:
     - name: Get Resolved User Requests from iTop
       ansible.builtin.uri:
-        # Points to your iTop on the WSL host
         url: "http://172.25.115.72/itop/webservices/rest.php?version=1.3"
         method: POST
         body_format: form-urlencoded
@@ -25,7 +24,6 @@
     - name: Trigger the 1LINK Network Workflow
       awx.awx.workflow_launch:
         name: "Change Approval Workflow"
-        # Force the workflow to use the inventory containing your switch
         inventory: "iTop Managed Network"
         controller_host: "http://10.43.90.93"
         controller_username: "admin"
@@ -33,8 +31,9 @@
         validate_certs: no
         extra_vars:
           itop_ticket_id: "{{ item.fields.id }}"
-          vlan_id: 100
-          vlan_name: "Finance_VLAN"
+          # This logic looks at the Title (e.g., "Vlan 101") and extracts the number
+          vlan_id: "{{ item.fields.title | regex_replace('[^0-9]', '') | int }}"
+          vlan_name: "{{ item.fields.title | replace(' ', '_') }}"
           change_type: "create_vlan"
       loop: "{{ itop_response.json.objects | dict2items | map(attribute='value') | list }}"
       when: 
