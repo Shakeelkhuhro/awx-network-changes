@@ -1,24 +1,25 @@
 ---
-- name: "FETCH: Pull Live Configs for Batfish"
-  hosts: all
-  gather_facts: no
+- name: "BATFISH: Deep Pre-Validation & Visibility"
+  hosts: localhost
+  connection: local
   tasks:
-    - name: "Ensure Local Directory Structure"
-      delegate_to: localhost
-      file:
-        path: "/tmp/batfish_snapshot/configs"
-        state: directory
-        mode: '0755'
+    - name: "Setup Batfish Session"
+      pybatfish.batfish.bf_session:
+        host: "localhost" # or WSL IP
+        name: "1link_network"
 
-    - name: "Get Running Config from Switch"
-      cisco.ios.ios_command:
-        commands: "show running-config"
-      register: live_cfg
-      when: "'cisco' in group_names"
+    - name: "Initialize Network Snapshot"
+      pybatfish.batfish.bf_init_snapshot:
+        network: "1link_prod"
+        snapshot: "current_state"
+        snapshot_path: "/tmp/batfish_snapshot/"
+        overwrite: true
 
-    - name: "Save Config to Local File"
-      delegate_to: localhost
-      copy:
-        content: "{{ live_cfg.stdout[0] }}"
-        dest: "/tmp/batfish_snapshot/configs/{{ inventory_hostname }}.cfg"
-      when: live_cfg.stdout is defined
+    - name: "QUERY: Show All VLANs & Interface Properties"
+      pybatfish.batfish.bf_extract_facts:
+        output_path: "/tmp/network_facts.json"
+
+    - name: "VISIBILITY: Display Current VLAN Inventory"
+      debug:
+        msg: "Batfish identifies the following active VLANs on target: {{ item }}"
+      loop: "{{ lookup('file', '/tmp/network_facts.json') | from_json | json_query('nodes.*.Configuration.Vlans') }}"
