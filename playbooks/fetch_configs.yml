@@ -5,7 +5,7 @@
   gather_facts: no
   tasks:
     - name: "Install PyBatfish Python Library"
-      pip:
+      ansible.builtin.pip:
         name: pybatfish
 
 - name: "FETCH: Pull Live Configs for Batfish"
@@ -13,11 +13,11 @@
   gather_facts: no
   tasks:
     - name: "Ensure Local Directory Structure"
-      delegate_to: localhost
-      file:
+      ansible.builtin.file:
         path: "/tmp/batfish_snapshot/configs"
         state: directory
         mode: '0755'
+      delegate_to: localhost
 
     - name: "Get Running Config from Switch"
       cisco.ios.ios_command:
@@ -26,8 +26,8 @@
       when: "'cisco' in group_names"
 
     - name: "Save Config to Local File"
-      delegate_to: localhost
-      copy:
+      ansible.builtin.copy:
         content: "{{ live_cfg.stdout[0] }}"
         dest: "/tmp/batfish_snapshot/configs/{{ inventory_hostname }}.cfg"
+      delegate_to: localhost
       when: live_cfg is defined and live_cfg.stdout is defined
