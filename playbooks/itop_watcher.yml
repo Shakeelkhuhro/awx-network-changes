@@ -21,7 +21,21 @@
             }
       register: itop_response
 
+    - name: Process and Trigger Workflows
+      include_tasks: trigger_loop.yml
+      loop: "{{ itop_response.json.objects | dict2items | map(attribute='value') | list }}"
+      loop_control:
+        loop_var: ticket
+      when: 
+        - itop_response.json.code == 0 
+        - itop_response.json.objects is not none
+
+
+
     - name: Trigger the 1LINK Network Workflow
+      vars:
+        # We calculate the ID as a clean integer here
+        raw_vlan_id: "{{ ticket.fields.title | regex_replace('[^0-9]', '') | int }}"
       awx.awx.workflow_launch:
         name: "Change Approval Workflow"
         inventory: "iTop Managed Network"
@@ -30,12 +44,13 @@
         controller_password: "Admin@123"
         validate_certs: no
         extra_vars:
-          itop_ticket_id: "{{ item.fields.id }}"
-          # The key fix: Convert the regex result to an integer here
-          vlan_id: "{{ item.fields.title | regex_replace('[^0-9]', '') | int }}"
-          vlan_name: "{{ item.fields.title | replace(' ', '_') }}"
+          itop_ticket_id: "{{ ticket.fields.id }}"
+          vlan_id: "{{ raw_vlan_id }}"
+          vlan_name: "{{ ticket.fields.title | replace(' ', '_') }}"
           change_type: "create_vlan"
       loop: "{{ itop_response.json.objects | dict2items | map(attribute='value') | list }}"
+      loop_control:
+        loop_var: ticket
       when: 
         - itop_response.json.code == 0 
         - itop_response.json.objects is not none
