@@ -1,4 +1,13 @@
 ---
+- name: "PRE-REQUISITES: Prepare AWX Runner"
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+    - name: "Install PyBatfish Python Library"
+      ansible.builtin.pip:
+        name: pybatfish
+
 - name: "BATFISH: Dry Run & Impact Analysis"
   hosts: localhost
   connection: local
