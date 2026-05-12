@@ -2,6 +2,4 @@
 collections:
   - name: cisco.ios
   - name: ansible.netcommon
-  - name: batfish.ansible
-    source: https://github.com/batfish/ansible-collection.git
-    type: git
+  - name: ansible.utils
