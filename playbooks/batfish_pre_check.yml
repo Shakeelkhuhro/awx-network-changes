@@ -1,0 +1,25 @@
+---
+- name: "BATFISH: Deep Pre-Validation & Visibility"
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: "Setup Batfish Session"
+      pybatfish.batfish.bf_session:
+        host: "localhost" # or WSL IP
+        name: "1link_network"
+
+    - name: "Initialize Network Snapshot"
+      pybatfish.batfish.bf_init_snapshot:
+        network: "1link_prod"
+        snapshot: "current_state"
+        snapshot_path: "/tmp/batfish_snapshot/"
+        overwrite: true
+
+    - name: "QUERY: Show All VLANs & Interface Properties"
+      pybatfish.batfish.bf_extract_facts:
+        output_path: "/tmp/network_facts.json"
+
+    - name: "VISIBILITY: Display Current VLAN Inventory"
+      debug:
+        msg: "Batfish identifies the following active VLANs on target: {{ item }}"
+      loop: "{{ lookup('file', '/tmp/network_facts.json') | from_json | json_query('nodes.*.Configuration.Vlans') }}"
