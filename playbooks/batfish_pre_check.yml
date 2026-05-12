@@ -4,7 +4,7 @@
   connection: local
   gather_facts: no
   tasks:
-    - name: "Install PyBatfish Python Library"
+    - name: "Install PyBatfish"
       ansible.builtin.pip:
         name: pybatfish
 
@@ -16,18 +16,30 @@
     - name: "VISIBILITY: Extract Network Facts using Python"
       ansible.builtin.shell: |
         python3 -c "
-        from pybatfish.client.commands import bf_init_snapshot, bf_set_network, bf_session
+        import pybatfish
+        from pybatfish.client.official import bf_session, bf_set_network, bf_init_snapshot
         from pybatfish.question import bfq
         import json
-        
-        bf_session.host = 'localhost'
-        bf_set_network('1link_prod')
-        bf_init_snapshot('/tmp/batfish_snapshot/', name='live_state', overwrite=True)
-        
-        # Get Node and VLAN information
-        facts = bfq.nodeProperties().answer().frame().to_json()
-        with open('/tmp/network_facts.json', 'w') as f:
-            f.write(facts)
+        import sys
+
+        try:
+            # Set connection to the Batfish service
+            bf_session.host = 'localhost'
+            
+            # Initialize Network and Snapshot
+            bf_set_network('1link_prod')
+            bf_init_snapshot('/tmp/batfish_snapshot/', name='live_state', overwrite=True)
+            
+            # Extract Facts
+            facts_frame = bfq.nodeProperties().answer().frame()
+            facts_json = facts_frame.to_json(orient='records')
+            
+            with open('/tmp/network_facts.json', 'w') as f:
+                f.write(facts_json)
+            print('Successfully extracted facts')
+        except Exception as e:
+            print(f'Error occurred: {e}')
+            sys.exit(1)
         "
       register: bf_python_output
 
