@@ -1,5 +1,5 @@
 ---
-- name: Poll iTop for Resolved Tickets
+- name: 1LINK iTop Watcher
   hosts: localhost
   connection: local
   gather_facts: no
@@ -21,7 +21,7 @@
             }
       register: itop_response
 
-    - name: Trigger Workflow via Direct API
+    - name: Trigger Multi-Action Workflow
       ansible.builtin.uri:
         url: "http://10.43.90.93/api/v2/workflow_job_templates/10/launch/"
         method: POST
@@ -35,8 +35,8 @@
             "inventory": 4,
             "extra_vars": {
               "itop_ticket_id": "{{ item.fields.id }}",
-              "change_type": "{% if 'vlan' in item.fields.title | lower and 'delete' not in item.fields.title | lower %}create_vlan{% elif 'delete' in item.fields.title | lower %}delete_vlan{% elif 'up' in item.fields.title | lower %}interface_up{% elif 'down' in item.fields.title | lower %}interface_down{% else %}update_description{% endif %}",
-              "vlan_id": {{ item.fields.title | regex_replace('[^0-9]', '') | default(1) | int }},
+              "change_type": "{% if 'delete' in item.fields.title | lower %}delete_vlan{% elif 'vlan' in item.fields.title | lower %}create_vlan{% elif 'up' in item.fields.title | lower %}interface_up{% elif 'down' in item.fields.title | lower %}interface_down{% else %}update_description{% endif %}",
+              "vlan_id": {{ item.fields.title | regex_search('[0-9]+') | default(1) | int }},
               "vlan_name": "{{ item.fields.title | replace(' ', '_') }}",
               "interface_name": "GigabitEthernet1/0/1",
               "interface_description": "{{ item.fields.title }}"
