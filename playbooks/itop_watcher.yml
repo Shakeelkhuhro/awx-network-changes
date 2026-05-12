@@ -24,14 +24,13 @@
     - name: Trigger the 1LINK Network Workflow
       awx.awx.workflow_launch:
         name: "Change Approval Workflow"
-        # Using the direct Cluster IP
         controller_host: "http://10.43.90.93"
         controller_username: "admin"
         controller_password: "Admin@123"
         validate_certs: no
         extra_vars:
           itop_ticket_id: "{{ item.fields.id }}"
-          vlan_id: "100"
+          vlan_id: 100  # Removed quotes to send as integer
           vlan_name: "Finance_VLAN"
           change_type: "create_vlan"
       loop: "{{ itop_response.json.objects | dict2items | map(attribute='value') | list }}"
