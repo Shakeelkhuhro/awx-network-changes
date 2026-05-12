@@ -21,22 +21,22 @@
             }
       register: itop_response
 
-    - name: Trigger the 1LINK Network Workflow
-      vars:
-        # This converts the string to an actual integer object before passing to the module
-        vlan_id_int: "{{ item.fields.title | regex_replace('[^0-9]', '') | int }}"
-      awx.awx.workflow_launch:
-        name: "Change Approval Workflow"
-        inventory: "iTop Managed Network"
-        controller_host: "http://10.43.90.93"
-        controller_username: "admin"
-        controller_password: "Admin@123"
-        validate_certs: no
-        extra_vars:
-          itop_ticket_id: "{{ item.fields.id }}"
-          vlan_id: "{{ vlan_id_int }}"
-          vlan_name: "{{ item.fields.title | replace(' ', '_') }}"
-          change_type: "create_vlan"
+    - name: Trigger Workflow via Direct API
+      ansible.builtin.uri:
+        url: "http://10.43.90.93/api/v2/workflow_job_templates/Change%20Approval%20Workflow/launch/"
+        method: POST
+        user: "admin"
+        password: "Admin@123"
+        force_basic_auth: yes
+        status_code: 201
+        body_format: json
+        body:
+          inventory: 4
+          extra_vars:
+            itop_ticket_id: "{{ item.fields.id }}"
+            vlan_id: {{ item.fields.title | regex_replace('[^0-9]', '') | int }}
+            vlan_name: "{{ item.fields.title | replace(' ', '_') }}"
+            change_type: "create_vlan"
       loop: "{{ itop_response.json.objects | dict2items | map(attribute='value') | list }}"
       when: 
         - itop_response.json.code == 0 
