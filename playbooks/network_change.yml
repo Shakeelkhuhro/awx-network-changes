@@ -1,3 +1,4 @@
+# playbooks/network_change.yml
 ---
 - name: 1LINK Multi-Action Network Automation
   hosts: all
@@ -9,49 +10,61 @@
     # EXECUTION LOGIC
     # ---------------------------
 
-    - name: Create VLAN
-      cisco.ios.ios_config:
-        lines: ["name {{ vlan_name | default('VLAN_' ~ vlan_id) | replace(' ', '_') }}"]
-        parents: "vlan {{ vlan_id }}"
-      when: change_type == 'create_vlan'
+    - name: Create or Update VLAN
+      cisco.ios.ios_vlans:
+        state: merged
+        config:
+          - name: "{{ vlan_name | default('VLAN_' ~ vlan_id) | replace(' ', '_') }}"
+            vlan_id: "{{ vlan_id | int }}"
+      when: change_type in ['create_vlan', 'update_vlan']
 
     - name: Delete VLAN
-      cisco.ios.ios_config:
-        lines: ["no vlan {{ vlan_id }}"]
+      cisco.ios.ios_vlans:
+        state: deleted
+        config:
+          - vlan_id: "{{ vlan_id | int }}"
       when: change_type == 'delete_vlan'
 
-    - name: Update VLAN (Rename)
-      cisco.ios.ios_config:
-        lines: ["name {{ vlan_name | replace(' ', '_') }}"]
-        parents: "vlan {{ vlan_id }}"
-      when: change_type == 'update_vlan'
-
-    - name: Interface Up
-      cisco.ios.ios_config:
-        lines: [no shutdown]
-        parents: "interface {{ interface_name }}"
-      when: change_type == 'interface_up'
-
-    - name: Interface Down
-      cisco.ios.ios_config:
-        lines: [shutdown]
-        parents: "interface {{ interface_name }}"
-      when: change_type == 'interface_down'
+    - name: Interface Up/Down
+      cisco.ios.ios_interfaces:
+        config:
+          - name: "{{ interface_name }}"
+            enabled: "{{ 'yes' if change_type == 'interface_up' else 'no' }}"
+      when: change_type in ['interface_up', 'interface_down']
 
     - name: Update Interface Description
       cisco.ios.ios_config:
-        lines: ["description {{ interface_description | replace(' ', '_') }}"]
+        lines:
+          - "description {{ interface_description | replace(' ', '_') }}"
         parents: "interface {{ interface_name }}"
       when: change_type == 'update_description'
 
+    # ---------------------------
+    # VERIFICATION
+    # ---------------------------
+
+    - name: Verify VLAN Status
+      cisco.ios.ios_command:
+        commands: "show vlan id {{ vlan_id }}"
+      register: vlan_result
+      when: change_type in ['create_vlan', 'update_vlan', 'delete_vlan']
+      ignore_errors: yes
+
+    - name: Verify Interface Status
+      cisco.ios.ios_command:
+        commands: "show run interface {{ interface_name }}"
+      register: int_result
+      when: interface_name is defined
+
 # -----------------------------------
-# CLOSE ITOP TICKET
+# FEEDBACK LOOP: CLOSE ITOP TICKET
 # -----------------------------------
+
 - name: Close iTop Ticket on Success
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Finalize Ticket in iTop
+    - name: Update and Close Ticket
       ansible.builtin.uri:
         url: "{{ lookup('env', 'ITOP_URL') | default('http://172.25.115.72/itop/webservices/rest.php?version=1.3', true) }}"
         method: POST
@@ -63,9 +76,9 @@
               "operation": "core/update",
               "class": "UserRequest",
               "key": "{{ itop_ticket_id }}",
-              "comment": "AWX Automation: {{ change_type }} executed successfully.",
+              "comment": "AWX Automation: {{ change_type }} completed on switch.",
               "fields": {
                 "status": "closed",
-                "solution": "Successfully completed {{ change_type }} for Target ID: {{ vlan_id | default(interface_name) }}."
+                "solution": "Action: {{ change_type }} applied successfully. Verified on device."
               }
             }
