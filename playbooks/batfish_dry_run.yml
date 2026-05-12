@@ -1,16 +1,27 @@
-- name: "SIMULATION: Check Reachability Impact"
+---
+- name: "BATFISH: Dry Run & Impact Analysis"
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: "Setup Simulation Snapshot"
+      pybatfish.batfish.bf_init_snapshot:
+        network: "1link_prod"
+        snapshot: "proposed_change"
+        snapshot_path: "/tmp/batfish_snapshot/"
+        overwrite: true
+
+    - name: "SIMULATION: Check for Configuration Compliance"
       pybatfish.batfish.bf_assert_all_flows_get_dropped:
-        snapshot: "proposed_state"
-        start_location: "vlan104_host"
+        snapshot: "proposed_change"
+        start_location: "vlan{{ vlan_id }}"
         headers:
-          dstIps: "8.8.8.8" # Can it reach the internet?
-      register: bf_reachability
+          dstIps: "8.8.8.8"
+      register: simulation_result
       ignore_errors: yes
 
-    - name: "SUMMARY: Dry Run Impact Report"
+    - name: "DRY RUN SUMMARY"
       debug:
         msg: >
-          DRY RUN REPORT: 
-          If we apply this change, Batfish predicts:
-          - VLAN Reachability: {{ 'SUCCESS' if not bf_reachability.failed else 'FAIL - Potential Routing Loop' }}
-          - Security Impact: No ACL violations detected.
+          IMPACT ANALYSIS:
+          Requested Change: {{ change_type }} for ID {{ vlan_id }}
+          Reachability Prediction: {{ 'SAFE - No traffic leaks' if not simulation_result.failed else 'WARNING - Potential Policy Violation' }}
