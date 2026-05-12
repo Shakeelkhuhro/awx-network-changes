@@ -1,84 +1,48 @@
-# playbooks/network_change.yml
 ---
-- name: 1LINK Multi-Action Network Automation
-  hosts: all
-  gather_facts: no
-  connection: network_cli
-
-  tasks:
-    # ---------------------------
-    # EXECUTION LOGIC
-    # ---------------------------
-
-    - name: Create or Update VLAN
-      cisco.ios.ios_vlans:
-        state: merged
-        config:
-          - name: "{{ vlan_name | default('VLAN_' ~ vlan_id) | replace(' ', '_') }}"
-            vlan_id: "{{ vlan_id | int }}"
-      when: change_type in ['create_vlan', 'update_vlan']
-
-    - name: Delete VLAN
-      cisco.ios.ios_vlans:
-        state: deleted
-        config:
-          - vlan_id: "{{ vlan_id | int }}"
-      when: change_type == 'delete_vlan'
-
-    - name: Interface Up/Down
-      cisco.ios.ios_interfaces:
-        config:
-          - name: "{{ interface_name }}"
-            enabled: "{{ 'yes' if change_type == 'interface_up' else 'no' }}"
-      when: change_type in ['interface_up', 'interface_down']
-
-    - name: Update Interface Description
-      cisco.ios.ios_config:
-        lines:
-          - "description {{ interface_description | replace(' ', '_') }}"
-        parents: "interface {{ interface_name }}"
-      when: change_type == 'update_description'
-
-    # ---------------------------
-    # VERIFICATION
-    # ---------------------------
-
-    - name: Verify VLAN Status
-      cisco.ios.ios_command:
-        commands: "show vlan id {{ vlan_id }}"
-      register: vlan_result
-      when: change_type in ['create_vlan', 'update_vlan', 'delete_vlan']
-      ignore_errors: yes
-
-    - name: Verify Interface Status
-      cisco.ios.ios_command:
-        commands: "show run interface {{ interface_name }}"
-      register: int_result
-      when: interface_name is defined
-
-# -----------------------------------
-# FEEDBACK LOOP: CLOSE ITOP TICKET
-# -----------------------------------
-
-- name: Close iTop Ticket on Success
+- name: Poll iTop for Resolved Tickets
   hosts: localhost
+  connection: local
   gather_facts: no
+
   tasks:
-    - name: Update and Close Ticket
+    - name: Get Resolved User Requests from iTop
       ansible.builtin.uri:
-        url: "{{ lookup('env', 'ITOP_URL') | default('http://172.25.115.72/itop/webservices/rest.php?version=1.3', true) }}"
+        url: "http://172.25.115.72/itop/webservices/rest.php?version=1.3"
         method: POST
         body_format: form-urlencoded
         body:
           auth_token: "{{ lookup('env', 'ITOP_TOKEN') }}"
           json_data: >
             {
-              "operation": "core/update",
+              "operation": "core/get",
               "class": "UserRequest",
-              "key": "{{ itop_ticket_id }}",
-              "comment": "AWX Automation: {{ change_type }} completed on switch.",
-              "fields": {
-                "status": "closed",
-                "solution": "Action: {{ change_type }} applied successfully. Verified on device."
-              }
+              "key": "SELECT UserRequest WHERE status='resolved'",
+              "output_fields": "id, title, description"
             }
+      register: itop_response
+
+    - name: Trigger Workflow via Direct API
+      ansible.builtin.uri:
+        url: "http://10.43.90.93/api/v2/workflow_job_templates/10/launch/"
+        method: POST
+        user: "admin"
+        password: "Admin@123"
+        force_basic_auth: yes
+        status_code: 201
+        body_format: json
+        body: >
+          {
+            "inventory": 4,
+            "extra_vars": {
+              "itop_ticket_id": "{{ item.fields.id }}",
+              "change_type": "{% if 'create' in item.fields.title | lower %}create_vlan{% elif 'delete' in item.fields.title | lower %}delete_vlan{% elif 'up' in item.fields.title | lower %}interface_up{% elif 'down' in item.fields.title | lower %}interface_down{% else %}update_description{% endif %}",
+              "vlan_id": {{ item.fields.title | regex_replace('[^0-9]', '') | default(1) | int }},
+              "vlan_name": "{{ item.fields.title | replace(' ', '_') }}",
+              "interface_name": "GigabitEthernet1/0/1",
+              "interface_description": "{{ item.fields.title }}"
+            }
+          }
+      loop: "{{ itop_response.json.objects | dict2items | map(attribute='value') | list }}"
+      when: 
+        - itop_response.json.code == 0 
+        - itop_response.json.objects is not none
