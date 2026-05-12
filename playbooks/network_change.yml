@@ -15,10 +15,11 @@
       when: change_type in ['create_vlan', 'update_vlan']
 
     - name: "ACTION: Delete VLAN"
-      cisco.ios.ios_vlans:
-        state: deleted
-        config:
-          - vlan_id: "{{ vlan_id | int }}"
+      cisco.ios.ios_config:
+        lines:
+          - "no shutdown"
+          - "no vlan {{ vlan_id }}"
+        parents: "vlan {{ vlan_id }}"
       register: vlan_delete_result
       when: change_type == 'delete_vlan'
 
