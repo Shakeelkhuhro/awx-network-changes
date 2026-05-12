@@ -1,29 +1,5 @@
----
-- name: Poll iTop for Resolved Tickets
-  hosts: localhost
-  connection: local
-  gather_facts: no
-
-  tasks:
-    - name: Get Resolved User Requests from iTop
+- name: Trigger Workflow via Direct API
       ansible.builtin.uri:
-        url: "http://172.25.115.72/itop/webservices/rest.php?version=1.3"
-        method: POST
-        body_format: form-urlencoded
-        body:
-          auth_token: "{{ lookup('env', 'ITOP_TOKEN') }}"
-          json_data: >
-            {
-              "operation": "core/get",
-              "class": "UserRequest",
-              "key": "SELECT UserRequest WHERE status='resolved'",
-              "output_fields": "id, title, description"
-            }
-      register: itop_response
-
-    - name: Trigger Workflow via Direct API
-      ansible.builtin.uri:
-        # UPDATED: Using ID 10 as per your AWX URL
         url: "http://10.43.90.93/api/v2/workflow_job_templates/10/launch/"
         method: POST
         user: "admin"
@@ -36,12 +12,14 @@
             "inventory": 4,
             "extra_vars": {
               "itop_ticket_id": "{{ item.fields.id }}",
-              "vlan_id": {{ item.fields.title | regex_replace('[^0-9]', '') | int }},
-              "vlan_name": "{{ item.fields.title | replace(' ', '_') }}",
-              "change_type": "create_vlan"
+              "change_type": "{{ 'create_vlan' if 'create' in item.fields.title | lower 
+                                 else 'delete_vlan' if 'delete' in item.fields.title | lower 
+                                 else 'interface_up' if 'up' in item.fields.title | lower 
+                                 else 'interface_down' if 'down' in item.fields.title | lower 
+                                 else 'update_description' }}",
+              "vlan_id": {{ item.fields.title | regex_replace('[^0-9]', '') | default(1) | int }},
+              "interface_name": "GigabitEthernet1/0/1",
+              "interface_description": "{{ item.fields.title }}"
             }
           }
       loop: "{{ itop_response.json.objects | dict2items | map(attribute='value') | list }}"
-      when: 
-        - itop_response.json.code == 0 
-        - itop_response.json.objects is not none
