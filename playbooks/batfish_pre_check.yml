@@ -23,14 +23,14 @@
         import sys
 
         try:
-            # Set connection to the Batfish service
+            # Set connection to the local Batfish service
             bf_session.host = 'localhost'
             
             # Initialize Network and Snapshot
             bf_set_network('1link_prod')
             bf_init_snapshot('/tmp/batfish_snapshot/', name='live_state', overwrite=True)
             
-            # Extract Facts
+            # Extract Node and Interface Facts
             facts_frame = bfq.nodeProperties().answer().frame()
             facts_json = facts_frame.to_json(orient='records')
             
@@ -38,7 +38,7 @@
                 f.write(facts_json)
             print('Successfully extracted facts')
         except Exception as e:
-            print(f'Error occurred: {e}')
+            print(f'Critical Error: {e}')
             sys.exit(1)
         "
       register: bf_python_output
@@ -47,10 +47,10 @@
       ansible.builtin.debug:
         msg: "Batfish has successfully parsed the configuration. Node details saved to /tmp/network_facts.json"
 
-    - name: "DISPLAY: Current VLANs on Target"
+    - name: "Show Parsed Inventory"
       ansible.builtin.shell: "cat /tmp/network_facts.json"
       register: cat_output
 
-    - name: "Show Parsed Inventory"
+    - name: "Display Fact Summary"
       ansible.builtin.debug:
         var: cat_output.stdout_lines
