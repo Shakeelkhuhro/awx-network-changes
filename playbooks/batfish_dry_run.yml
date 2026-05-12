@@ -22,7 +22,7 @@
         import sys
 
         try:
-            bf_session.host = 'localhost'
+            bf_session.host = '172.25.115.72'
             bf_set_network('1link_prod')
             bf_init_snapshot('/tmp/batfish_snapshot/', name='proposed_change', overwrite=True)
             
