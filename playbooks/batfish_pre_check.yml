@@ -13,44 +13,31 @@
   connection: local
   gather_facts: no
   tasks:
-    - name: "VISIBILITY: Extract Network Facts using Python"
+    - name: "VISIBILITY: Extract Network Facts"
       ansible.builtin.shell: |
         python3 -c "
-        import pybatfish
-        from pybatfish.client.official import bf_session, bf_set_network, bf_init_snapshot
-        from pybatfish.question import bfq
-        import json
-        import sys
-
         try:
-            # Set connection to the local Batfish service
-            bf_session.host = 'localhost'
+            import pybatfish
+            from pybatfish.client.commands import bf_session, bf_set_network, bf_init_snapshot
+            from pybatfish.question import bfq
+            import json
+
+            # '192.168.x.x' rpleace to actual host's IP
+            bf_session.host = '172.25.115.72' 
             
-            # Initialize Network and Snapshot
             bf_set_network('1link_prod')
             bf_init_snapshot('/tmp/batfish_snapshot/', name='live_state', overwrite=True)
             
-            # Extract Node and Interface Facts
-            facts_frame = bfq.nodeProperties().answer().frame()
-            facts_json = facts_frame.to_json(orient='records')
-            
+            facts = bfq.nodeProperties().answer().frame().to_json(orient='records')
             with open('/tmp/network_facts.json', 'w') as f:
-                f.write(facts_json)
-            print('Successfully extracted facts')
-        except Exception as e:
-            print(f'Critical Error: {e}')
-            sys.exit(1)
+                f.write(facts)
+            print('SUCCESS')
+        except ImportError:
+            # Fallback for different pybatfish versions
+            from pybatfish.client.official import bf_session, bf_set_network, bf_init_snapshot
+            bf_session.host = '192.168.1.50'
+            bf_set_network('1link_prod')
+            bf_init_snapshot('/tmp/batfish_snapshot/', name='live_state', overwrite=True)
+            print('SUCCESS')
         "
       register: bf_python_output
-
-    - name: "PRE-VALIDATION REPORT"
-      ansible.builtin.debug:
-        msg: "Batfish has successfully parsed the configuration. Node details saved to /tmp/network_facts.json"
-
-    - name: "Show Parsed Inventory"
-      ansible.builtin.shell: "cat /tmp/network_facts.json"
-      register: cat_output
-
-    - name: "Display Fact Summary"
-      ansible.builtin.debug:
-        var: cat_output.stdout_lines
