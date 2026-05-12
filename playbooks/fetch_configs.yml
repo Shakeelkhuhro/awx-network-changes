@@ -1,4 +1,9 @@
 ---
+- name: "Install PyBatfish Library"
+  pip:
+    name: pybatfish
+  delegate_to: localhost
+      
 - name: "FETCH: Pull Live Configs for Batfish"
   hosts: all
   gather_facts: no
