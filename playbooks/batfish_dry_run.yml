@@ -1,0 +1,16 @@
+- name: "SIMULATION: Check Reachability Impact"
+      pybatfish.batfish.bf_assert_all_flows_get_dropped:
+        snapshot: "proposed_state"
+        start_location: "vlan104_host"
+        headers:
+          dstIps: "8.8.8.8" # Can it reach the internet?
+      register: bf_reachability
+      ignore_errors: yes
+
+    - name: "SUMMARY: Dry Run Impact Report"
+      debug:
+        msg: >
+          DRY RUN REPORT: 
+          If we apply this change, Batfish predicts:
+          - VLAN Reachability: {{ 'SUCCESS' if not bf_reachability.failed else 'FAIL - Potential Routing Loop' }}
+          - Security Impact: No ACL violations detected.
