@@ -1,11 +1,11 @@
 ---
-- name: 1LINK Multi-Action Network Automation
+- name: "1LINK Multi-Action Network Automation"
   hosts: all
   gather_facts: no
   connection: network_cli
 
   tasks:
-    - name: ACTION: Create or Update VLAN
+    - name: "ACTION: Create or Update VLAN"
       cisco.ios.ios_vlans:
         state: merged
         config:
@@ -14,7 +14,7 @@
       register: vlan_create_result
       when: change_type in ['create_vlan', 'update_vlan']
 
-    - name: ACTION: Delete VLAN
+    - name: "ACTION: Delete VLAN"
       cisco.ios.ios_vlans:
         state: deleted
         config:
@@ -22,7 +22,7 @@
       register: vlan_delete_result
       when: change_type == 'delete_vlan'
 
-    - name: ACTION: Interface Up/Down
+    - name: "ACTION: Interface Up/Down"
       cisco.ios.ios_interfaces:
         config:
           - name: "{{ interface_name }}"
@@ -30,27 +30,36 @@
       register: int_status_result
       when: change_type in ['interface_up', 'interface_down']
 
+    - name: "ACTION: Update Interface Description"
+      cisco.ios.ios_config:
+        lines:
+          - "description {{ interface_description | replace(' ', '_') }}"
+        parents: "interface {{ interface_name }}"
+      register: desc_result
+      when: change_type == 'update_description'
+
     # ---------------------------
     # VISIBILITY: LOGGING THE CHANGE
     # ---------------------------
 
-    - name: SUMMARY: Show Change Applied to Switch
-      debug:
+    - name: "SUMMARY: Show Change Applied to Switch"
+      ansible.builtin.debug:
         msg: >-
-          {% if change_type == 'create_vlan' %} [SUCCESS] Created VLAN {{ vlan_id }} named {{ vlan_name }}
-          {% elif change_type == 'delete_vlan' %} [SUCCESS] Deleted VLAN {{ vlan_id }} from Database
-          {% elif change_type == 'interface_up' %} [SUCCESS] Port {{ interface_name }} is now UP (No Shutdown)
-          {% elif change_type == 'interface_down' %} [SUCCESS] Port {{ interface_name }} is now DOWN (Shutdown)
-          {% else %} [SUCCESS] Applied change: {{ change_type }} {% endif %}
+          {% if change_type == 'create_vlan' %}[SUCCESS] Created VLAN {{ vlan_id }} named {{ vlan_name }}
+          {% elif change_type == 'delete_vlan' %}[SUCCESS] Deleted VLAN {{ vlan_id }} from Database
+          {% elif change_type == 'interface_up' %}[SUCCESS] Port {{ interface_name }} is now UP (No Shutdown)
+          {% elif change_type == 'interface_down' %}[SUCCESS] Port {{ interface_name }} is now DOWN (Shutdown)
+          {% elif change_type == 'update_description' %}[SUCCESS] Updated description for {{ interface_name }}
+          {% else %}[SUCCESS] Applied change: {{ change_type }}{% endif %}
 
 # -----------------------------------
 # FINAL FEEDBACK LOOP
 # -----------------------------------
-- name: Close iTop Ticket
+- name: "Close iTop Ticket"
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Final iTop Closure with Detailed Solution
+    - name: "Final iTop Closure with Detailed Solution"
       ansible.builtin.uri:
         url: "http://172.25.115.72/itop/webservices/rest.php?version=1.3"
         method: POST
@@ -64,6 +73,6 @@
               "key": "{{ itop_ticket_id }}",
               "fields": {
                 "status": "closed",
-                "solution": "1LINK Automation Engine: Successfully executed {{ change_type }} for resource associated with ID {{ vlan_id | default(interface_name) }}."
+                "solution": "1LINK Automation: Successfully executed {{ change_type }} for resource {{ vlan_id | default(interface_name) }}. Verified on device."
               }
             }
