@@ -4,7 +4,7 @@
   connection: local
   gather_facts: no
   tasks:
-    - name: "Install PyBatfish Python Library"
+    - name: "Install PyBatfish"
       ansible.builtin.pip:
         name: pybatfish
 
@@ -16,23 +16,25 @@
     - name: "SIMULATION: Run Reachability Dry Run"
       ansible.builtin.shell: |
         python3 -c "
-        from pybatfish.client.commands import bf_init_snapshot, bf_set_network, bf_session
+        import pybatfish
+        from pybatfish.client.official import bf_session, bf_set_network, bf_init_snapshot
         from pybatfish.question import bfq
-        
-        bf_session.host = 'localhost'
-        bf_set_network('1link_prod')
-        bf_init_snapshot('/tmp/batfish_snapshot/', name='proposed_change', overwrite=True)
-        
-        # Check if traffic is dropped as expected (Simulation)
-        result = bfq.testFilters(headers={'dstIps': '8.8.8.8'}).answer().frame()
-        print(result)
+        import sys
+
+        try:
+            bf_session.host = 'localhost'
+            bf_set_network('1link_prod')
+            bf_init_snapshot('/tmp/batfish_snapshot/', name='proposed_change', overwrite=True)
+            
+            # Check if traffic to Google DNS is allowed
+            result = bfq.testFilters(headers={'dstIps': '8.8.8.8'}).answer().frame()
+            print(result)
+        except Exception as e:
+            print(f'Simulation Failed: {e}')
+            sys.exit(1)
         "
       register: simulation_result
 
     - name: "DRY RUN SUMMARY"
       ansible.builtin.debug:
-        msg: >
-          IMPACT ANALYSIS:
-          Requested Action: {{ change_type | default('Manual_Check') }}
-          Status: Batfish simulation complete.
-          Prediction: The configuration is syntactically valid and loaded into the Digital Twin.
+        msg: "Batfish simulation complete. Prediction: The configuration is syntactically valid."
