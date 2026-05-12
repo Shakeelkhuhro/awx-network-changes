@@ -97,9 +97,10 @@
 
   tasks:
 
-    - name: Close iTop Ticket
+    - name: Close iTop Ticket on Success
       ansible.builtin.uri:
-        url: "{{ lookup('env', 'ITOP_URL') }}"
+        # This ensures it uses the variable from the credential
+        url: "{{ lookup('env', 'ITOP_URL') | default('http://172.25.115.72/itop/webservices/rest.php?version=1.3', true) }}"
         method: POST
         body_format: form-urlencoded
         body:
