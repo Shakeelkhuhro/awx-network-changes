@@ -23,7 +23,8 @@
 
     - name: Trigger Workflow via Direct API
       ansible.builtin.uri:
-        url: "http://10.43.90.93/api/v2/workflow_job_templates/Change%20Approval%20Workflow/launch/"
+        # UPDATED: Using ID 10 as per your AWX URL
+        url: "http://10.43.90.93/api/v2/workflow_job_templates/10/launch/"
         method: POST
         user: "admin"
         password: "Admin@123"
