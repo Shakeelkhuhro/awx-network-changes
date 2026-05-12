@@ -31,7 +31,7 @@
         validate_certs: no
         extra_vars:
           itop_ticket_id: "{{ item.fields.id }}"
-          # This logic looks at the Title (e.g., "Vlan 101") and extracts the number
+          # The key fix: Convert the regex result to an integer here
           vlan_id: "{{ item.fields.title | regex_replace('[^0-9]', '') | int }}"
           vlan_name: "{{ item.fields.title | replace(' ', '_') }}"
           change_type: "create_vlan"
