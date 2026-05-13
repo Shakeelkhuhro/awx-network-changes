@@ -30,18 +30,20 @@
         force_basic_auth: yes
         status_code: 201
         body_format: json
-        body: >
-          {
-            "inventory": 4,
-            "extra_vars": {
-              "itop_ticket_id": "{{ item.fields.id }}",
-              "change_type": "{% if 'delete' in item.fields.title | lower %}delete_vlan{% elif 'vlan' in item.fields.title | lower %}create_vlan{% elif 'up' in item.fields.title | lower %}interface_up{% elif 'down' in item.fields.title | lower %}interface_down{% else %}update_description{% endif %}",
-              "vlan_id": {{ item.fields.title | regex_search('[0-9]+') | default(1) | int }},
-              "vlan_name": "{{ item.fields.title | replace(' ', '_') }}",
-              "interface_name": "GigabitEthernet1/0/1",
-              "interface_description": "{{ item.fields.title }}"
-            }
-          }
+        body:
+          inventory: 4
+          extra_vars:
+            itop_ticket_id: "{{ item.fields.id }}"
+            change_type: >-
+              {% if 'delete' in item.fields.title | lower %}delete_vlan
+              {% elif 'vlan' in item.fields.title | lower %}create_vlan
+              {% elif 'up' in item.fields.title | lower %}interface_up
+              {% elif 'down' in item.fields.title | lower %}interface_down
+              {% else %}update_description{% endif %}
+            vlan_id: "{{ item.fields.title | regex_search('[0-9]+') | default('0') | int }}"
+            vlan_name: "{{ item.fields.title | regex_replace(' ', '_') }}"
+            interface_name: "GigabitEthernet1/0/1"
+            interface_description: "iTop Ticket {{ item.fields.id }}: {{ item.fields.title }}"
       loop: "{{ itop_response.json.objects | dict2items | map(attribute='value') | list }}"
       when: 
         - itop_response.json.code == 0 
