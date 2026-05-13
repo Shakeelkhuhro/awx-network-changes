@@ -1,13 +1,4 @@
 ---
-- name: "PRE-REQUISITES: Prepare AWX Runner"
-  hosts: localhost
-  connection: local
-  gather_facts: no
-  tasks:
-    - name: "Install PyBatfish"
-      ansible.builtin.pip:
-        name: pybatfish
-
 - name: "BATFISH: Dry Run & Impact Analysis"
   hosts: localhost
   connection: local
@@ -16,17 +7,16 @@
     - name: "SIMULATION: Run Reachability Dry Run"
       ansible.builtin.shell: |
         python3 -c "
-        import pybatfish
-        from pybatfish.client.official import bf_session, bf_set_network, bf_init_snapshot
-        from pybatfish.question import bfq
-        import sys
-
         try:
+            import pybatfish
+            from pybatfish.client.official import bf_session, bf_set_network, bf_init_snapshot
+            from pybatfish.question import bfq
+            import sys
+
             bf_session.host = '172.25.115.72'
             bf_set_network('1link_prod')
             bf_init_snapshot('/tmp/batfish_snapshot/', name='proposed_change', overwrite=True)
             
-            # Check if traffic to Google DNS is allowed
             result = bfq.testFilters(headers={'dstIps': '8.8.8.8'}).answer().frame()
             print(result)
         except Exception as e:
