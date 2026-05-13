@@ -29,10 +29,10 @@
 
     - name: Launch AWX workflow for each resolved request
       vars:
-        ticket_title: "{{ item.fields.title | lower }}"
-        # We process the number and type here as native Python objects
-        raw_vlan: "{{ (item.fields.title | regex_search('[0-9]+') | default('1')) | int }}"
-        raw_action: "{{ 'delete_vlan' if 'delete' in ticket_title else 'create_vlan' if 'vlan' in ticket_title else 'update_description' }}"
+        # Step 1: Extract the number and store it as a native Python integer
+        extracted_vlan: "{{ (item.fields.title | regex_search('[0-9]+') | default('1')) | int }}"
+        # Step 2: Determine action type
+        extracted_action: "{{ 'delete_vlan' if 'delete' in item.fields.title | lower else 'create_vlan' if 'vlan' in item.fields.title | lower else 'update_description' }}"
       ansible.builtin.uri:
         url: "{{ awx_url }}"
         method: POST
@@ -45,9 +45,10 @@
           inventory: "{{ awx_inventory | int }}"
           extra_vars:
             itop_ticket_id: "{{ item.fields.id }}"
-            change_type: "{{ raw_action }}"
-            # NOTICE: No quotes around raw_vlan. This tells Ansible to keep it as an integer.
-            vlan_id: "{{ raw_vlan }}"
+            change_type: "{{ extracted_action }}"
+            # CRITICAL FIX: By passing the variable directly without extra filters or spaces 
+            # inside the quotes, Ansible's URI module will preserve the 'int' type in JSON.
+            vlan_id: "{{ extracted_vlan }}"
             vlan_name: "{{ item.fields.title | regex_replace(' ', '_') }}"
             interface_name: "GigabitEthernet1/0/1"
       loop: "{{ itop_response.json.objects.values() | list if itop_response.json.objects else [] }}"
