@@ -29,18 +29,16 @@
 
     - name: Launch AWX workflow for each resolved request
       vars:
-        # Pre-calculating values as native Python types
-        vlan_int: "{{ (item.fields.title | regex_search('[0-9]+') | default(1)) | int }}"
-        action_str: "{{ 'delete_vlan' if 'delete' in item.fields.title | lower else 'create_vlan' if 'vlan' in item.fields.title | lower else 'update_description' }}"
-        
-        # Creating the dictionary structure here
-        payload_vars:
-          itop_ticket_id: "{{ item.fields.id }}"
-          change_type: "{{ action_str }}"
-          vlan_id: "{{ vlan_int }}"
-          vlan_name: "{{ item.fields.title | regex_replace(' ', '_') }}"
-          interface_name: "GigabitEthernet1/0/1"
-
+        # We build a RAW JSON string manually. This is the "Old Reliable" method.
+        # Notice there are NO quotes around the vlan_id value.
+        raw_extra_vars: >-
+          {
+            "itop_ticket_id": "{{ item.fields.id }}",
+            "change_type": "{{ 'delete_vlan' if 'delete' in item.fields.title | lower else 'create_vlan' if 'vlan' in item.fields.title | lower else 'update_description' }}",
+            "vlan_id": {{ item.fields.title | regex_search('[0-9]+') | default(1) | int }},
+            "vlan_name": "{{ item.fields.title | regex_replace(' ', '_') }}",
+            "interface_name": "GigabitEthernet1/0/1"
+          }
       ansible.builtin.uri:
         url: "{{ awx_url }}"
         method: POST
@@ -51,8 +49,8 @@
         body_format: json
         body:
           inventory: "{{ awx_inventory | int }}"
-          # The 'combine' ensures the dictionary is treated as a pure object
-          extra_vars: "{{ payload_vars | combine({}) }}"
+          # We use from_json to turn our perfect string back into a real object
+          extra_vars: "{{ raw_extra_vars | from_json }}"
       loop: "{{ itop_response.json.objects.values() | list if itop_response.json.objects else [] }}"
       when:
         - itop_response.json.code == 0
