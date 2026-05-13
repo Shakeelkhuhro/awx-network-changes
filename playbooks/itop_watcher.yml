@@ -21,7 +21,7 @@
             }
       register: itop_response
 
-    - name: Trigger Multi-Action Workflow (API Force Method)
+    - name: Trigger Multi-Action Workflow
       ansible.builtin.uri:
         url: "http://10.43.90.93/api/v2/workflow_job_templates/10/launch/"
         method: POST
@@ -29,22 +29,17 @@
         password: "Admin@123"
         force_basic_auth: yes
         status_code: 201
-        body_format: raw  # Changed from 'string' to 'raw'
-        headers:
-          Content-Type: "application/json"
-        # ---
-        body: >
-          {
-            "inventory": 4,
-            "extra_vars": {
-              "itop_ticket_id": "{{ item.fields.id }}",
-              "change_type": "{% if 'delete' in item.fields.title | lower %}delete_vlan{% elif 'vlan' in item.fields.title | lower %}create_vlan{% elif 'up' in item.fields.title | lower %}interface_up{% elif 'down' in item.fields.title | lower %}interface_down{% else %}update_description{% endif %}",
-              "vlan_id": {{ item.fields.title | regex_search('[0-9]+') | default(1) | int }},
-              "vlan_name": "{{ item.fields.title | regex_replace(' ', '_') }}",
-              "interface_name": "GigabitEthernet1/0/1",
-              "interface_description": "iTop Ticket {{ item.fields.id }}: {{ item.fields.title }}"
-            }
-          }
+        body_format: json
+        body:
+          inventory: 4
+          extra_vars:
+            itop_ticket_id: "{{ item.fields.id }}"
+            # Use 'trim' to remove that pesky trailing space in change_type
+            change_type: "{{ 'delete_vlan' if 'delete' in item.fields.title | lower else 'create_vlan' if 'vlan' in item.fields.title | lower else 'update_description' }}"
+            # This specific syntax forces the type to Integer in the JSON payload
+            vlan_id: "{{ item.fields.title | regex_search('[0-9]+') | default(1) | int }}"
+            vlan_name: "{{ item.fields.title | regex_replace(' ', '_') }}"
+            interface_name: "GigabitEthernet1/0/1"
       loop: "{{ itop_response.json.objects | dict2items | map(attribute='value') | list }}"
       when: 
         - itop_response.json.code == 0 
