@@ -1,13 +1,4 @@
 ---
-- name: "PRE-REQUISITES: Prepare AWX Runner"
-  hosts: localhost
-  connection: local
-  gather_facts: no
-  tasks:
-    - name: "Install PyBatfish"
-      ansible.builtin.pip:
-        name: pybatfish
-
 - name: "BATFISH: Deep Visibility & Pre-Validation"
   hosts: localhost
   connection: local
@@ -18,11 +9,11 @@
         python3 -c "
         try:
             import pybatfish
-            from pybatfish.client.commands import bf_session, bf_set_network, bf_init_snapshot
+            from pybatfish.client.official import bf_session, bf_set_network, bf_init_snapshot
             from pybatfish.question import bfq
             import json
 
-            # '192.168.x.x' rpleace to actual host's IP
+            # Bridging to the Batfish container on the Host IP
             bf_session.host = '172.25.115.72' 
             
             bf_set_network('1link_prod')
@@ -32,12 +23,20 @@
             with open('/tmp/network_facts.json', 'w') as f:
                 f.write(facts)
             print('SUCCESS')
-        except ImportError:
-            # Fallback for different pybatfish versions
-            from pybatfish.client.official import bf_session, bf_set_network, bf_init_snapshot
-            bf_session.host = '192.168.1.50'
-            bf_set_network('1link_prod')
-            bf_init_snapshot('/tmp/batfish_snapshot/', name='live_state', overwrite=True)
-            print('SUCCESS')
+        except Exception as e:
+            print(f'Runtime Error: {e}')
+            import sys; sys.exit(1)
         "
       register: bf_python_output
+
+    - name: "PRE-VALIDATION REPORT"
+      ansible.builtin.debug:
+        msg: "Batfish parsed config. Node details saved to /tmp/network_facts.json"
+
+    - name: "Show Parsed Inventory"
+      ansible.builtin.shell: "cat /tmp/network_facts.json"
+      register: cat_output
+
+    - name: "Display Results"
+      ansible.builtin.debug:
+        var: cat_output.stdout_lines
