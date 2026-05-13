@@ -29,16 +29,10 @@
 
     - name: Launch AWX workflow for each resolved request
       vars:
-        # We build a RAW JSON string manually. This is the "Old Reliable" method.
-        # Notice there are NO quotes around the vlan_id value.
-        raw_extra_vars: >-
-          {
-            "itop_ticket_id": "{{ item.fields.id }}",
-            "change_type": "{{ 'delete_vlan' if 'delete' in item.fields.title | lower else 'create_vlan' if 'vlan' in item.fields.title | lower else 'update_description' }}",
-            "vlan_id": {{ item.fields.title | regex_search('[0-9]+') | default(1) | int }},
-            "vlan_name": "{{ item.fields.title | regex_replace(' ', '_') }}",
-            "interface_name": "GigabitEthernet1/0/1"
-          }
+        # 1. Capture the VLAN as a pure integer object
+        vlan_val: "{{ (item.fields.title | regex_search('[0-9]+') | default(1)) | int }}"
+        # 2. Capture the Action as a pure string
+        action_val: "{{ 'delete_vlan' if 'delete' in item.fields.title | lower else 'create_vlan' if 'vlan' in item.fields.title | lower else 'update_description' }}"
       ansible.builtin.uri:
         url: "{{ awx_url }}"
         method: POST
@@ -49,8 +43,12 @@
         body_format: json
         body:
           inventory: "{{ awx_inventory | int }}"
-          # We use from_json to turn our perfect string back into a real object
-          extra_vars: "{{ raw_extra_vars | from_json }}"
+          extra_vars:
+            itop_ticket_id: "{{ item.fields.id }}"
+            change_type: "{{ action_val }}"
+            vlan_id: "{{ vlan_val | int }}"
+            vlan_name: "{{ item.fields.title | regex_replace(' ', '_') }}"
+            interface_name: "GigabitEthernet1/0/1"
       loop: "{{ itop_response.json.objects.values() | list if itop_response.json.objects else [] }}"
       when:
         - itop_response.json.code == 0
