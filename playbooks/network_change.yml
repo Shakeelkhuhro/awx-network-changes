@@ -57,10 +57,6 @@
   connection: local
   gather_facts: no
   tasks:
-    - name: "Get current timestamp for iTop"
-      set_fact:
-        current_time: "{{ lookup('pipe', 'date +\"%Y-%m-%d %H:%M:%S\"') }}"
-
     - name: "Final iTop Closure"
       ansible.builtin.uri:
         url: "http://172.25.115.72/itop/webservices/rest.php?version=1.3"
@@ -68,17 +64,15 @@
         body_format: form-urlencoded
         body:
           auth_token: "{{ lookup('env', 'ITOP_TOKEN') }}"
-          # The to_json filter creates a perfect JSON string that iTop will accept
+          # Simplified JSON structure to bypass "Unknown attribute" errors
           json_data: "{{ {
             'operation': 'core/update',
             'class': 'UserRequest',
             'key': itop_ticket_id,
-            'comment': '1LINK Automation finalized the change.',
+            'comment': '1LINK Automation finalized the change on the network.',
             'fields': {
               'status': 'closed',
-              'close_code': 'finalized',
-              'close_date': current_time,
-              'solution': 'Successfully executed ' ~ change_type ~ ' for resource ' ~ (vlan_id | default(interface_name) | string) ~ '. Verified on Cat9k.'
+              'solution': 'Successfully executed ' ~ change_type ~ ' for resource ' ~ (vlan_id | default(interface_name) | string) ~ '. Change verified on device.'
             }
           } | to_json }}"
       register: closure_result
