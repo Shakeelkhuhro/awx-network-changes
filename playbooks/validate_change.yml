@@ -2,7 +2,6 @@
 - name: 1LINK Validation Engine
   hosts: all
   gather_facts: no
-  # connection: network_cli (Inherited from AWX Template)
 
   vars:
     vlan_id_str: "{{ vlan_id | default('') | string }}"
@@ -11,7 +10,7 @@
     # ---------------------------
     # INPUT CHECKS
     # ---------------------------
-    - name: Fail if critical variables are missing
+    - name: "FAIL: Missing critical variables"
       ansible.builtin.fail:
         msg: "Missing required variables: change_type or vlan_id"
       when: change_type is not defined or vlan_id is not defined
@@ -19,26 +18,26 @@
     # ---------------------------
     # VLAN VALIDATION
     # ---------------------------
-    - name: Get current VLAN database
+    - name: "ACTION: Get current VLAN database"
       cisco.ios.ios_command:
         commands:
           - show vlan brief
       register: vlan_output
       when: change_type in ['create_vlan', 'delete_vlan']
 
-    - name: Check VLAN existence
+    - name: "FACT: Check VLAN existence"
       ansible.builtin.set_fact:
         vlan_exists: "{{ vlan_id_str in vlan_output.stdout[0] }}"
       when: change_type in ['create_vlan', 'delete_vlan']
 
-    - name: PRE-CHECK FAIL: Prevent duplicate creation
+    - name: "PRE-CHECK FAIL: Duplicate creation prevented"
       ansible.builtin.fail:
         msg: "VLAN {{ vlan_id }} already exists on the switch. Aborting creation."
       when:
         - change_type == 'create_vlan'
         - vlan_exists
 
-    - name: PRE-CHECK FAIL: Prevent deletion of non-existent VLAN
+    - name: "PRE-CHECK FAIL: Deletion of non-existent VLAN prevented"
       ansible.builtin.fail:
         msg: "VLAN {{ vlan_id }} not found on the switch. Aborting deletion."
       when:
@@ -48,20 +47,20 @@
     # ---------------------------
     # INTERFACE VALIDATION
     # ---------------------------
-    - name: Get interface config
+    - name: "ACTION: Get interface config"
       cisco.ios.ios_command:
         commands:
-          - show running-config interface {{ interface_name }}
+          - "show running-config interface {{ interface_name }}"
       register: int_output
       when: change_type in ['interface_up', 'interface_down', 'update_description']
 
-    - name: Fail if interface invalid
+    - name: "FAIL: Interface does not exist"
       ansible.builtin.fail:
         msg: "Interface {{ interface_name }} does not exist on this device."
       when:
         - change_type in ['interface_up', 'interface_down', 'update_description']
         - "'Invalid input' in int_output.stdout[0]"
 
-    - name: Validation Passed
+    - name: "SUCCESS: Validation Passed"
       ansible.builtin.debug:
         msg: "All checks passed for {{ change_type }} on VLAN/Interface {{ vlan_id | default(interface_name) }}"
