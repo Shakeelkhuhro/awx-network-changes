@@ -29,10 +29,10 @@
         password: "Admin@123"
         force_basic_auth: yes
         status_code: 201
-        body_format: string
+        body_format: raw  # Changed from 'string' to 'raw'
         headers:
           Content-Type: "application/json"
-        # The '>' block allows us to write raw JSON without YAML syntax errors
+        # ---
         body: >
           {
             "inventory": 4,
