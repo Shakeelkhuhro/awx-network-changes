@@ -22,6 +22,10 @@
       register: itop_response
 
     - name: Trigger Multi-Action Workflow
+      vars:
+        # We define the variables here as native types
+        vlan_number: "{{ item.fields.title | regex_search('[0-9]+') | default(1) | int }}"
+        action_type: "{{ 'delete_vlan' if 'delete' in item.fields.title | lower else 'create_vlan' if 'vlan' in item.fields.title | lower else 'update_description' }}"
       ansible.builtin.uri:
         url: "http://10.43.90.93/api/v2/workflow_job_templates/10/launch/"
         method: POST
@@ -34,10 +38,8 @@
           inventory: 4
           extra_vars:
             itop_ticket_id: "{{ item.fields.id }}"
-            # Use 'trim' to remove that pesky trailing space in change_type
-            change_type: "{{ 'delete_vlan' if 'delete' in item.fields.title | lower else 'create_vlan' if 'vlan' in item.fields.title | lower else 'update_description' }}"
-            # This specific syntax forces the type to Integer in the JSON payload
-            vlan_id: "{{ item.fields.title | regex_search('[0-9]+') | default(1) | int }}"
+            change_type: "{{ action_type }}"
+            vlan_id: "{{ vlan_number | int }}"
             vlan_name: "{{ item.fields.title | regex_replace(' ', '_') }}"
             interface_name: "GigabitEthernet1/0/1"
       loop: "{{ itop_response.json.objects | dict2items | map(attribute='value') | list }}"
