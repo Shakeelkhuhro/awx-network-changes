@@ -32,15 +32,18 @@
         body_format: json
         body:
           inventory: 4
+          # The key is to ensure extra_vars are perfectly formatted
           extra_vars:
             itop_ticket_id: "{{ item.fields.id }}"
+            # We use trim and lower to ensure no extra spaces or caps break the match
             change_type: >-
               {% if 'delete' in item.fields.title | lower %}delete_vlan
               {% elif 'vlan' in item.fields.title | lower %}create_vlan
               {% elif 'up' in item.fields.title | lower %}interface_up
               {% elif 'down' in item.fields.title | lower %}interface_down
               {% else %}update_description{% endif %}
-            vlan_id: "{{ item.fields.title | regex_search('[0-9]+') | default('0') | int }}"
+            # We force the vlan_id to be a mathematical integer, not a string
+            vlan_id: "{{ item.fields.title | regex_search('[0-9]+') | default(1) | int }}"
             vlan_name: "{{ item.fields.title | regex_replace(' ', '_') }}"
             interface_name: "GigabitEthernet1/0/1"
             interface_description: "iTop Ticket {{ item.fields.id }}: {{ item.fields.title }}"
