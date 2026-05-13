@@ -59,7 +59,7 @@
   tasks:
     - name: "Get current timestamp for iTop"
       set_fact:
-        current_time: "{{ lookup('pipe', 'date +%Y-%m-%d\\ %H:%M:%S') }}"
+        current_time: "{{ lookup('pipe', 'date +\"%Y-%m-%d %H:%M:%S\"') }}"
 
     - name: "Final iTop Closure"
       ansible.builtin.uri:
@@ -68,19 +68,19 @@
         body_format: form-urlencoded
         body:
           auth_token: "{{ lookup('env', 'ITOP_TOKEN') }}"
-          json_data: >
-            {
-              "operation": "core/update",
-              "class": "UserRequest",
-              "key": "{{ itop_ticket_id }}",
-              "comment": "Automation finalized the change on the network.",
-              "fields": {
-                "status": "closed",
-                "close_code": "finalized",
-                "close_date": "{{ current_time }}",
-                "solution": "1LINK Automation: Successfully executed {{ change_type }} for resource {{ vlan_id | default(interface_name) }}. Change verified on device."
-              }
+          # The to_json filter creates a perfect JSON string that iTop will accept
+          json_data: "{{ {
+            'operation': 'core/update',
+            'class': 'UserRequest',
+            'key': itop_ticket_id,
+            'comment': '1LINK Automation finalized the change.',
+            'fields': {
+              'status': 'closed',
+              'close_code': 'finalized',
+              'close_date': current_time,
+              'solution': 'Successfully executed ' ~ change_type ~ ' for resource ' ~ (vlan_id | default(interface_name) | string) ~ '. Verified on Cat9k.'
             }
+          } | to_json }}"
       register: closure_result
       when: itop_ticket_id is defined
 
