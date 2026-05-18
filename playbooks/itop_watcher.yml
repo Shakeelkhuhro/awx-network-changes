@@ -6,8 +6,8 @@
 
   vars:
     awx_url: "http://10.43.90.93/api/v2/workflow_job_templates/10/launch/"
-    awx_username: "{{ lookup('env', 'AWX_USERNAME') }}"
-    awx_password: "{{ lookup('env', 'AWX_PASSWORD') }}"
+    awx_username: "admin"
+    awx_password: "Admin@123"
     awx_inventory: 4
 
   tasks:
