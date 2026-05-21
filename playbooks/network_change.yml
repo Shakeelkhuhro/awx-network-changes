@@ -1,4 +1,3 @@
----
 # =========================================================
 # 1LINK Multi-Action Network Automation
 # =========================================================
@@ -12,29 +11,6 @@
     ansible_network_os: cisco.ios.ios
 
   tasks:
-
-    # =====================================================
-    # PRE-CHECK VALIDATION
-    # =====================================================
-
-    - name: "VALIDATION: Ensure change_type is provided"
-      ansible.builtin.fail:
-        msg: "change_type variable is required."
-      when: change_type is not defined
-
-    - name: "VALIDATION: Ensure interface_name exists for interface actions"
-      ansible.builtin.fail:
-        msg: "interface_name is required for interface operations."
-      when:
-        - change_type in ['interface_up', 'interface_down', 'update_description']
-        - interface_name is not defined
-
-    - name: "VALIDATION: Ensure vlan_id exists for VLAN actions"
-      ansible.builtin.fail:
-        msg: "vlan_id is required for VLAN operations."
-      when:
-        - change_type in ['create_vlan', 'update_vlan', 'delete_vlan']
-        - vlan_id is not defined
 
     # =====================================================
     # BACKUP CONFIGURATION
@@ -93,7 +69,7 @@
       cisco.ios.ios_config:
         parents: "interface {{ interface_name }}"
         lines:
-          - "description {{ interface_description }}"
+          - "description {{ interface_description | replace(' ', '_') }}"
       register: desc_result
       when:
         - change_type == 'update_description'
@@ -177,7 +153,7 @@
             'comment': '1LINK Automation completed successfully.',
             'fields': {
               'status': 'closed',
-              'solution': 'Automation completed successfully for change type: ' ~ change_type
+              'solution': 'Successfully executed ' ~ change_type ~ ' for resource ' ~ (vlan_id | default(interface_name) | string) ~ '. Change verified on device.'
             }
           } | to_json }}"
 
