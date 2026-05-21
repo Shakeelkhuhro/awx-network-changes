@@ -1,13 +1,55 @@
 ---
+# =========================================================
+# 1LINK Multi-Action Network Automation
+# =========================================================
+
 - name: "1LINK Multi-Action Network Automation"
   hosts: all
   gather_facts: no
   connection: network_cli
-  
+
   vars:
     ansible_network_os: cisco.ios.ios
 
   tasks:
+
+    # =====================================================
+    # PRE-CHECK VALIDATION
+    # =====================================================
+
+    - name: "VALIDATION: Ensure change_type is provided"
+      ansible.builtin.fail:
+        msg: "change_type variable is required."
+      when: change_type is not defined
+
+    - name: "VALIDATION: Ensure interface_name exists for interface actions"
+      ansible.builtin.fail:
+        msg: "interface_name is required for interface operations."
+      when:
+        - change_type in ['interface_up', 'interface_down', 'update_description']
+        - interface_name is not defined
+
+    - name: "VALIDATION: Ensure vlan_id exists for VLAN actions"
+      ansible.builtin.fail:
+        msg: "vlan_id is required for VLAN operations."
+      when:
+        - change_type in ['create_vlan', 'update_vlan', 'delete_vlan']
+        - vlan_id is not defined
+
+    # =====================================================
+    # BACKUP CONFIGURATION
+    # =====================================================
+
+    - name: "BACKUP: Save running configuration"
+      cisco.ios.ios_command:
+        commands:
+          - show running-config
+      register: backup_config
+
+    # =====================================================
+    # VLAN CREATE / UPDATE
+    # =====================================================
+
     - name: "ACTION: Create or Update VLAN"
       cisco.ios.ios_vlans:
         state: merged
@@ -15,14 +57,24 @@
           - name: "{{ vlan_name | default('VLAN_' ~ vlan_id) }}"
             vlan_id: "{{ vlan_id | int }}"
       register: vlan_create_result
-      when: change_type in ['create_vlan', 'update_vlan']
+      when:
+        - change_type in ['create_vlan', 'update_vlan']
+
+    # =====================================================
+    # VLAN DELETE
+    # =====================================================
 
     - name: "ACTION: Delete VLAN"
       cisco.ios.ios_config:
         lines:
           - "no vlan {{ vlan_id }}"
       register: vlan_delete_result
-      when: change_type == 'delete_vlan'
+      when:
+        - change_type == 'delete_vlan'
+
+    # =====================================================
+    # INTERFACE UP/DOWN
+    # =====================================================
 
     - name: "ACTION: Interface Up/Down"
       cisco.ios.ios_interfaces:
@@ -30,54 +82,111 @@
           - name: "{{ interface_name }}"
             enabled: "{{ true if change_type == 'interface_up' else false }}"
       register: int_status_result
-      when: change_type in ['interface_up', 'interface_down']
+      when:
+        - change_type in ['interface_up', 'interface_down']
+
+    # =====================================================
+    # UPDATE INTERFACE DESCRIPTION
+    # =====================================================
 
     - name: "ACTION: Update Interface Description"
       cisco.ios.ios_config:
-        lines:
-          - "description {{ interface_description | replace(' ', '_') }}"
         parents: "interface {{ interface_name }}"
+        lines:
+          - "description {{ interface_description }}"
       register: desc_result
-      when: change_type == 'update_description'
+      when:
+        - change_type == 'update_description'
+        - interface_description is defined
 
-    - name: "SUMMARY: Show Change Applied to Switch"
+    # =====================================================
+    # POST VALIDATION
+    # =====================================================
+
+    - name: "VERIFY: Show Interface Status"
+      cisco.ios.ios_command:
+        commands:
+          - "show interface {{ interface_name }} status"
+      register: verify_interface
+      when:
+        - change_type in ['interface_up', 'interface_down']
+        - interface_name is defined
+
+    - name: "VERIFY: Show VLAN"
+      cisco.ios.ios_command:
+        commands:
+          - "show vlan id {{ vlan_id }}"
+      register: verify_vlan
+      when:
+        - change_type in ['create_vlan', 'update_vlan']
+        - vlan_id is defined
+
+    # =====================================================
+    # SUMMARY OUTPUT
+    # =====================================================
+
+    - name: "SUMMARY: Show Change Applied"
       ansible.builtin.debug:
         msg: >-
-          {% if change_type == 'create_vlan' %}[SUCCESS] Created VLAN {{ vlan_id }} named {{ vlan_name }}
-          {% elif change_type == 'delete_vlan' %}[SUCCESS] Deleted VLAN {{ vlan_id }}
-          {% elif change_type == 'interface_up' %}[SUCCESS] Port {{ interface_name }} is now UP
-          {% elif change_type == 'interface_down' %}[SUCCESS] Port {{ interface_name }} is now DOWN
-          {% else %}[SUCCESS] Applied change: {{ change_type }}{% endif %}
+          {% if change_type == 'create_vlan' %}
+          [SUCCESS] VLAN {{ vlan_id }} created successfully.
 
-# -----------------------------------
-# FINAL FEEDBACK LOOP
-# -----------------------------------
+          {% elif change_type == 'update_vlan' %}
+          [SUCCESS] VLAN {{ vlan_id }} updated successfully.
+
+          {% elif change_type == 'delete_vlan' %}
+          [SUCCESS] VLAN {{ vlan_id }} deleted successfully.
+
+          {% elif change_type == 'interface_up' %}
+          [SUCCESS] Interface {{ interface_name }} is UP.
+
+          {% elif change_type == 'interface_down' %}
+          [SUCCESS] Interface {{ interface_name }} is DOWN.
+
+          {% elif change_type == 'update_description' %}
+          [SUCCESS] Description updated on {{ interface_name }}.
+
+          {% else %}
+          [INFO] Change executed successfully.
+          {% endif %}
+
+# =========================================================
+# ITOP FEEDBACK LOOP
+# =========================================================
+
 - name: "Close iTop Ticket"
   hosts: localhost
   connection: local
   gather_facts: no
+
   tasks:
+
     - name: "Final iTop Closure"
       ansible.builtin.uri:
         url: "http://172.25.115.72/itop/webservices/rest.php?version=1.3"
         method: POST
         body_format: form-urlencoded
         body:
+
           auth_token: "{{ lookup('env', 'ITOP_TOKEN') }}"
-          # Simplified JSON structure to bypass "Unknown attribute" errors
+
           json_data: "{{ {
             'operation': 'core/update',
             'class': 'UserRequest',
             'key': itop_ticket_id,
-            'comment': '1LINK Automation finalized the change on the network.',
+            'comment': '1LINK Automation completed successfully.',
             'fields': {
               'status': 'closed',
-              'solution': 'Successfully executed ' ~ change_type ~ ' for resource ' ~ (vlan_id | default(interface_name) | string) ~ '. Change verified on device.'
+              'solution': 'Automation completed successfully for change type: ' ~ change_type
             }
           } | to_json }}"
-      register: closure_result
-      when: itop_ticket_id is defined
 
-    - name: "Debug iTop Closure Response"
+      register: closure_result
+      when:
+        - itop_ticket_id is defined
+
+    - name: "DEBUG: Show iTop API Response"
       ansible.builtin.debug:
         var: closure_result.json
+      when:
+        - closure_result is defined
